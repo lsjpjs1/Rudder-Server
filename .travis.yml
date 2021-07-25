@@ -1,0 +1,16 @@
+sudo: required
+
+language: generic
+
+services:
+  - docker
+
+before_install:
+  - echo "start creating an image with dockerfile"
+  - docker build -t rudder-server .
+
+script:
+  - docker run --env-file ./env.list -p 3000:3000 rudder-server
+
+after_success:
+  - echo "Test success"

@@ -1,6 +1,5 @@
 /.dockerignore
 /.env
-/Dockerfile
 /env.list
 /node_modules
 /public
