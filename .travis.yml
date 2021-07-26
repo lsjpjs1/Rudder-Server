@@ -9,6 +9,9 @@ before_install:
   - echo "start creating an image with dockerfile"
   - docker build -t rudder-server -f Dockerfile .
 
+script:
+  - sudo docker run --name rudder-server -p 3000:3000 rudder-server
+
 after_success:
   - echo "Test success"
 
