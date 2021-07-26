@@ -13,7 +13,7 @@ after_success:
   - echo "Test success"
 
 before_deploy:
-  - zip -r rudder-server
+  - zip -r rudder-server .
   - mkdir -p deploy
   - mv rudder-server deploy/rudder-server.zip
 
