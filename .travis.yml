@@ -15,7 +15,7 @@ after_success:
 before_deploy:
   - zip -r rudder-server .
   - mkdir -p deploy
-  - mv rudder-server deploy/rudder-server.zip
+  - mv rudder-server.zip deploy/rudder-server.zip
 
 deploy:
   - provider: s3
