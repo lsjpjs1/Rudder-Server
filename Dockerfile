@@ -3,5 +3,5 @@ WORKDIR /app
 COPY package*.json /app/
 RUN npm install
 COPY . .
-CMD ["npm","start","./bin/www"]
+CMD ["forever","./bin/www"]
 EXPOSE 3000
