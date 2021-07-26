@@ -7,11 +7,11 @@ files:
 permissions:
   - object: /
     pattern: "**"
-    owner: root
-    group: root
+    owner: bitnami
+    group: bitnami
   
 hooks:
   ApplicationStart:
     - location: deploy.sh
       timeout: 100
-      runas: root
+      runas: bitnami
