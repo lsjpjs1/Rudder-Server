@@ -9,10 +9,10 @@ permissions:
     pattern: "**"
     owner: bitnami
     group: bitnami
-    mode: 7
+    mode: 7777
   
 hooks:
   ApplicationStart:
-    - location: /deploy.sh
+    - location: deploy.sh
       timeout: 100
       runas: bitnami
