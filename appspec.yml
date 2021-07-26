@@ -12,6 +12,6 @@ permissions:
   
 hooks:
   ApplicationStart:
-    - location: deploy.sh
+    - location: /deploy.sh
       timeout: 100
       runas: bitnami
