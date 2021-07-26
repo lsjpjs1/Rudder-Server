@@ -9,7 +9,7 @@ permissions:
     pattern: "**"
     owner: bitnami
     group: bitnami
-    mode: 7777
+    mode: 777
   
 hooks:
   ApplicationStart:
