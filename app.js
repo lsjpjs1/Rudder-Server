@@ -52,7 +52,7 @@ app.get("/:name", function(req, res){
     res.send("Welcome to Minho's web server. You added "+name+" in URL");
 });
 app.get("/", function(req,res){
-    res.send("Welcome to Minho's node server. This server is for handling Minho's Simple Signup/login App!");
+    res.send("Welcome to Minho's node server. This server is for handling Minho's Simple Signup/login App!123");
 });
 
 app.use('/signupin',signupinRouter)
