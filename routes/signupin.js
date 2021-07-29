@@ -100,6 +100,19 @@ async function checkduplication(user_id){
         console.log("Cleaned.") 
     }
 }
+
+router.post("/checkduplication",async function(req,res){
+
+    const user_id = req.body.user_id;
+    
+    const isDuplicated = await checkduplication(user_id)
+    const result = JSON.stringify({result:{isDuplicated:isDuplicated}})
+    res.send(result)
+
+
+});
+
+
 async function checkpassword(user_id, user_password){
     try{
         const encryptedPw = crypto.createHmac('sha1',secret).update(user_password).digest('base64')
@@ -196,6 +209,7 @@ async function signUpInsertGoogle(user_id,user_password,email,user_google_email,
         console.log("Cleaned.") 
     }
 }
+
 
 
 router.post('/googleLogin', async function(req,res){
