@@ -114,9 +114,10 @@ console.log(email)
               
               smtpTransport.close();
           });
-          res.send("")
+          res.send("true")
+          
     }else{  
-        res.send("Please enter your valid Waseda school email")
+        res.send("false")
     }
     
         
