@@ -107,6 +107,7 @@ router.post("/checkduplication",async function(req,res){
     
     const isDuplicated = await checkduplication(user_id)
     const result = JSON.stringify({result:{isDuplicated:isDuplicated}})
+    
     res.send(result)
 
 
