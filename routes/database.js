@@ -9,4 +9,5 @@ const client = new Pool({
     database: process.env.DB_DATABASE,
 })
 
+
 module.exports = client
