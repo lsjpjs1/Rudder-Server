@@ -122,6 +122,23 @@ async function showPost(user_id, post_id){
     }
 }
 
+async function showComment(user_id, post_id){
+    try{
+        await client.query("BEGIN")
+       
+        var CommentJsonData = await commentRender(post_id,user_id)
+
+        var jsonData = JSON.stringify(CommentJsonData)
+        return jsonData;
+    }catch(ex){
+        console.log("Failed to execute showComment"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
 async function commentRender(post_id, user_id){
     try{
         await client.query("BEGIN")
@@ -326,6 +343,19 @@ router.post("/showPost",async function(req,res){
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
         var jsonData=await showPost(temp.user_id,post_id);
+
+        res.send(jsonData);
+    }else{
+        res.send('error')
+    }
+})
+
+router.post("/showComment",async function(req,res){
+    console.log("showComment is called")
+    const {post_id,token} = req.body; 
+    if(tk.decodeToken(token)){
+        var temp = jwt.verify(token,SECRET_KEY)
+        var jsonData=await showComment(temp.user_id,post_id);
 
         res.send(jsonData);
     }else{
