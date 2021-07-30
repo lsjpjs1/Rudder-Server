@@ -128,7 +128,7 @@ async function showComment(user_id, post_id){
        
         var CommentJsonData = await commentRender(post_id,user_id)
 
-        var jsonData = JSON.stringify(CommentJsonData)
+        var jsonData = JSON.stringify({results:CommentJsonData})
         return jsonData;
     }catch(ex){
         console.log("Failed to execute showComment"+ex)
