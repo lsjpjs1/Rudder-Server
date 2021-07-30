@@ -277,10 +277,10 @@ router.post("/signup",async function(req,res){
     const user_id = req.body.user_id;
     const user_password = req.body.user_password;
     if(await checkduplication(user_id)==true){
-        res.send("This ID already exists. Please try other ID");
+        res.send("false");
     }else{
     
-        res.send("Welcome " + user_id);
+        res.send("true");
         // signup(user_id,user_password)
     }
 });
