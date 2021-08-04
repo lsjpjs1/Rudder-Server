@@ -330,10 +330,11 @@ router.post("/addPost",async function(req,res){
 
         const videoIdList=getVideoIdList(post_body)
 
-        await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList).then(res.send("finish"))
+        await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList).then(res.send(JSON.stringify({results:{isSuccess:true}})))
         
     }else{
-        res.send('error')
+        var result = JSON.stringify({results:{isSuccess:false}})
+        res.send(result)
     }
 })
 
