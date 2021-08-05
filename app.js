@@ -41,6 +41,7 @@ const discussionRouter = require('./routes/discussion')
 const boardRouter = require('./routes/board')
 const favoriteRouter = require('./routes/favorite')
 const reviewsearchRouter = require('./routes/reviewsearch')
+const commentRouter = require('./routes/comment')
 
 // const client = require("./routes/database");
 // const tk = require("./routes/tokenhandle")
@@ -63,6 +64,7 @@ app.use('/discussion',discussionRouter)
 app.use('/favorite',favoriteRouter)
 app.use('/reviewsearch',reviewsearchRouter)
 app.use('/board',boardRouter)
+app.use('/comment',commentRouter)
 
 
 module.exports = app;
