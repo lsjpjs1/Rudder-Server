@@ -1,9 +1,12 @@
 const express = require('express')
 const router = express.Router()
-const client = require("./database");
-const tk = require("./tokenhandle")
 process.env.TZ='Asia/Tokyo'
+const client = require("./database");
 
+const jwt = require('jsonwebtoken')
+require('dotenv').config({path:'./.env'});
+const SECRET_KEY = process.env.JWT_SECRET
+const tk = require("./tokenhandle");
 
 async function commentRender(post_id, user_id){
     try{
