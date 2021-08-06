@@ -260,7 +260,7 @@ router.post('/loginJWT', async function(req,res){
                     results:{
                         success: true,
                         error:'',
-                        info: token
+                        token: token
                     }
                 }))
             })
@@ -269,7 +269,7 @@ router.post('/loginJWT', async function(req,res){
                 results:{
                     success: false,
                     error:'PASSWORDWRONG',
-                    info: ''
+                    token: ''
                 }
             }))
         }
@@ -278,7 +278,7 @@ router.post('/loginJWT', async function(req,res){
             results:{
                 success: false,
                 error:'IDWRONG',
-                info: ''
+                token: ''
             }
         }))
     }
