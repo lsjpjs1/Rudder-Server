@@ -256,20 +256,31 @@ router.post('/loginJWT', async function(req,res){
             let options = {}
 
             jwt.sign(payload, SECRET_KEY, options, (err, token) => {
-                res.json({
-                    success: true,
-                    info: token
-                })
+                res.send(JSON.stringify({
+                    results:{
+                        success: true,
+                        error:'',
+                        info: token
+                    }
+                }))
             })
         }else{
-            res.json({
-                success: 'PASSWORDWRONG'
-            })
+            res.send(JSON.stringify({
+                results:{
+                    success: false,
+                    error:'PASSWORDWRONG',
+                    info: token
+                }
+            }))
         }
     }else{
-        res.json({
-            success: "IDWRONG"
-        })
+        res.send(JSON.stringify({
+            results:{
+                success: false,
+                error:'IDWRONG',
+                info: token
+            }
+        }))
     }
 })
 router.post("/signup",async function(req,res){
