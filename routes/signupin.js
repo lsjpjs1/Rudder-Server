@@ -211,6 +211,34 @@ async function signUpInsertGoogle(user_id,user_password,email,user_google_email,
     }
 }
 
+async function schoolList() { 
+    try{
+        await client.query("BEGIN")
+        
+        const results=await client.query("select * from university")
+        var schoolList = new Array()
+        for(result in results){
+            var school = new Object()
+            school.school_id = result.school_id
+            school.school_name = result.school_name
+            schoolList.push(school)
+        }
+
+        return schoolList
+    }catch(ex){
+        console.log("Failed to execute schoolList"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/schoolList",async function(req,res){
+
+    const schoolList = await schoolList()
+    res.send(JSON.stringify({results:schoolList}))
+});
+
 
 
 router.post('/googleLogin', async function(req,res){
