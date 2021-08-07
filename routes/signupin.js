@@ -217,7 +217,9 @@ async function schoolList() {
         
         const results=await client.query("select * from university")
         var schoolList = new Array()
-        for(result in results){
+        
+        for(result of results.rows){
+            console.log(result)
             var school = new Object()
             school.school_id = result.school_id
             school.school_name = result.school_name
@@ -235,8 +237,8 @@ async function schoolList() {
 
 router.post("/schoolList",async function(req,res){
 
-    const schoolList = await schoolList()
-    res.send(JSON.stringify({results:schoolList}))
+    const schools = await schoolList()
+    res.send(JSON.stringify({results:schools}))
 });
 
 
