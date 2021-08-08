@@ -58,15 +58,22 @@ async function insertRecommendationCode(user_id,recommendationCode){
     }
 }
 
+async function insertProfile(user_id,profile_body){
 
+    await client.query("BEGIN")
+    const profile_id = await client.query("insert into user_profile values (default,$1) returning profile_id",[profile_body])
+    await client.query("update user_info set profile_id=$1 where user_id = $2",[profile_id.rows[0].profile_id,user_id])
+    await client.query("COMMIT")
 
-async function signup(user_id,user_password,email,recommendationCode) { 
+}
+
+async function signup(user_id,user_password,email,recommendationCode,school_id,character_index,profile_body,user_nickname) { 
     try{
        // await client.connect()
         const encryptedPw = crypto.createHmac('sha1',secret).update(user_password).digest('base64') // encrypting pw
         await client.query("BEGIN")
         
-        const results=await client.query("insert into user_info values (default,$1, $2,$3,true,null,default)",[user_id,encryptedPw,email])
+        const results=await client.query("insert into user_info values (default,$1, $2,$3,true,$4,default,$5,$6)",[user_id,encryptedPw,email,user_nickname,school_id,character_index])
 
         console.log(results)
         console.log("Inserted a new id")
@@ -78,9 +85,22 @@ async function signup(user_id,user_password,email,recommendationCode) {
     }finally{
        // await client.end()
        await insertRecommendationCode(user_id,recommendationCode)
+       await insertProfile(user_id,profile_body)
         console.log("Cleaned.") 
     }
 }
+
+router.post("/signupinsert",async function(req,res){
+    // user_id : int, user_password : String, email : String, recommendationCode : String, school_id : int, character_index : String, profile_body : String, user_nickname : String
+    const {user_id,user_password,email,recommendationCode,school_id,character_index,profile_body,user_nickname} = req.body
+    console.log(req.body)
+        
+        await signup(user_id,user_password,email,recommendationCode,school_id,character_index,profile_body,user_nickname).then(res.send("Welcome " + user_id))
+    
+        
+
+});
+
 
 async function checkduplication(user_id){
     try{
@@ -326,17 +346,6 @@ router.post("/signup",async function(req,res){
     }
 });
 
-router.post("/signupinsert",async function(req,res){
-
-    const {user_id,user_password,email,recommendationCode} = req.body
-    console.log(req.body)
-    console.log(email)
-        
-        await signup(user_id,user_password,email,recommendationCode).then(res.send("Welcome " + user_id))
-    
-        
-
-});
 
 
 
