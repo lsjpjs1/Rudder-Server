@@ -26,8 +26,9 @@ async function renderPost(board_type,pagingIndex,endPostId){
         var post = new Array()
         for(i=0;i<results.rows.length;i++){
             var data = new Object()
-            data.post_id = results.rows[i].post_id
             const infoResult = await client.query("SELECT * from user_info where user_id = $1",[results.rows[i].user_id])
+            const commentCountResult = await client.query("SELECT COUNT(comment_id) from board_comment_new where post_id=$1",[results.rows[i].post_id])
+            data.post_id = results.rows[i].post_id
             if(infoResult.rows[0].user_nickname==null){
                 data.user_id = infoResult.rows[0].user_id
             }else{
@@ -38,7 +39,7 @@ async function renderPost(board_type,pagingIndex,endPostId){
             data.post_title = results.rows[i].post_title
             data.post_time = results.rows[i].post_time
             console.log(data.post_time)
-            data.comment_count = results.rows[i].comment_count
+            data.comment_count = commentCountResult.rows[0].count
             data.like_count = results.rows[i].like_count
             data.post_view = results.rows[i].post_view
             post.push(data)
