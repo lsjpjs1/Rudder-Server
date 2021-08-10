@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 process.env.TZ='Asia/Tokyo'
 const client = require("./database");
-
+const tk = require("./tokenhandle");
 const nodemailer = require('nodemailer');
 const smtpTransport = nodemailer.createTransport({
     service: "Gmail",
@@ -254,6 +254,14 @@ async function schoolList() {
         console.log("Cleaned.") 
     }
 }
+
+router.post("/validationToken",async function(req,res){
+    const {token} = req.body
+    const isTokenValid = await decodeToken(token)
+    res.send(JSON.stringify({results:{isTokenValid:isTokenValid}}))
+    
+});
+
 
 router.post("/schoolList",async function(req,res){
 
