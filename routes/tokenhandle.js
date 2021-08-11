@@ -17,4 +17,3 @@ module.exports.decodeToken=async function (token){
         return JSON.stringify(a)
     })
 }
-z
