@@ -235,7 +235,7 @@ async function schoolList() {
     try{
         await client.query("BEGIN")
         
-        const results=await client.query("select * from university where school_id > 0")
+        const results=await client.query("select * from university where school_id > 1")
         var schoolList = new Array()
         
         for(result of results.rows){
