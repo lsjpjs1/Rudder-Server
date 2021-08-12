@@ -237,7 +237,7 @@ async function schoolList() {
         
         const results=await client.query("select * from university")
         var schoolList = new Array()
-        
+        console.log(results.rows)
         for(result of results.rows){
             console.log(result)
             var school = new Object()
