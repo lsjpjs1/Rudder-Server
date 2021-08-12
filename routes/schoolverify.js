@@ -102,7 +102,7 @@ console.log(email)
         await client.query("insert into email_verification values (default,$1, $2)",[email,authNum])
         await client.query("COMMIT")
     
-        
+        console.log(process.env.GOOGLE_USER,process.env.GOOGLE_PASS)
         const mailOptions = {
             from: process.env.GOOGLE_USER,
             to: email,
