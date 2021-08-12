@@ -44,6 +44,34 @@ async function commentRender(post_id, user_id){
     }
 }
 
+async function addComment(user_id,post_id, comment_body){
+    try{
+        await client.query("BEGIN")
+        await client.query("insert into board_comment values (default, $1, $2, $3, default, 0)",[post_id,user_id,comment_body])
+        await client.query("update board set comment_count = comment_count+1 where post_id=($1)",[post_id])
+        await client.query("COMMIT")
+    }catch(ex){
+        console.log("Failed to execute addLike"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/addComment",async function(req,res){
+    console.log("addComment is called")
+    const {post_id,comment_body,token,status} = req.body
+
+    if(tk.decodeToken(token)){
+        var temp = jwt.verify(token,SECRET_KEY)
+        await addComment(temp.user_id,post_id, comment_body).then(res.send("finish"))
+        
+    }else{
+        res.send('error')
+    }
+})
+
 router.post("/showComment",async function(req,res){
     console.log("showComment is called")
     const {post_id,token} = req.body; 
