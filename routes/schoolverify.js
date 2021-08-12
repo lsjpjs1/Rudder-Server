@@ -111,7 +111,7 @@ console.log(email)
           };
           
           await smtpTransport.sendMail(mailOptions, (error, responses) =>{
-              
+              console.log(error,responses)
               smtpTransport.close();
           });
           res.send("true")
