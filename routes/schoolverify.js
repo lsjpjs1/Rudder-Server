@@ -114,10 +114,10 @@ console.log(email)
               console.log(error,responses)
               smtpTransport.close();
           });
-          res.send("true")
+          res.send(JSON.stringify({results:{isVerify:true}}))
           
     }else{  
-        res.send("false")
+        res.send(JSON.stringify({results:{isVerify:false}}))
     }
     
         
@@ -135,9 +135,9 @@ router.post("/checkCode",async function(req,res){
 
 
     if(result.rows[0].verification_code==verifyCode || verifyCode=='853853'){
-        res.send('Success')
+        res.send(JSON.stringify({results:{isSuccess:true}}))
     }else{
-        res.send('Fail')
+        res.send(JSON.stringify({results:{isSuccess:false}}))
     }
         
 
