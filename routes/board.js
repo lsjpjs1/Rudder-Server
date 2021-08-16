@@ -17,28 +17,25 @@ async function renderPost(board_type,pagingIndex,endPostId){
         var offset = pagingIndex * POST_NUMBER_IN_ONE_PAGE
         
         if(offset == 0){
-            var results = await client.query("SELECT * from board where board_type = $1 order by post_id desc limit 20 offset 0",[board_type])
+            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id where board_type = $1 order by post_id desc limit 20 offset 0",[board_type])
         }else{
-            var results = await client.query("SELECT * from board where board_type = $1 and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
+            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id where board_type = $1 and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
         }
         
 
         var post = new Array()
         for(i=0;i<results.rows.length;i++){
             var data = new Object()
-            const infoResult = await client.query("SELECT * from user_info where user_id = $1",[results.rows[i].user_id])
-            //const commentCountResult = await client.query("SELECT COUNT(comment_id) from board_comment_new where post_id=$1",[results.rows[i].post_id])
             data.post_id = results.rows[i].post_id
-            if(infoResult.rows[0].user_nickname==null){
-                data.user_id = infoResult.rows[0].user_id
+            if(results.rows[i].user_nickname==null){
+                data.user_id = results.rows[i].user_id
             }else{
-                data.user_id = infoResult.rows[0].user_nickname
+                data.user_id = results.rows[i].user_nickname
             }
             
             data.post_body = results.rows[i].post_body
             data.post_title = results.rows[i].post_title
             data.post_time = results.rows[i].post_time
-            console.log(data.post_time)
             data.comment_count = results.rows[i].comment_count
             data.like_count = results.rows[i].like_count
             data.post_view = results.rows[i].post_view
