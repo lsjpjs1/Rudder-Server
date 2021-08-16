@@ -43,7 +43,7 @@ async function addverify(user_info_id){
 }
 function checkemail(email){//assume that Edin's email adress is like "s12345@edin.ac.uk"
 console.log(email)
-     var emailregex=/[^\s]+@naver.com/;
+     var emailregex=/[^\s]+@naver.com|[^\s]+@waseda.com|[^\s]+@korea.ac.kr/;
      if(email=="woosung@friend.waseda.jp")return true;
 
     console.log("the email is "+emailregex.test(email))
