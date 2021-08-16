@@ -95,7 +95,7 @@ router.post("/signupinsert",async function(req,res){
     const {user_id,user_password,email,recommendationCode,school_id,character_index,profile_body,user_nickname} = req.body
     console.log(req.body)
         
-        await signup(user_id,user_password,email,recommendationCode,school_id,character_index,profile_body,user_nickname).then(res.send("Welcome " + user_id))
+    await signup(user_id,user_password,email,recommendationCode,school_id,character_index,profile_body,user_nickname).then(res.send(JSON.stringify({results:{signUpComplete:true}})))
     
         
 
