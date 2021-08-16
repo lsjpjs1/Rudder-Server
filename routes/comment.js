@@ -11,15 +11,14 @@ const tk = require("./tokenhandle");
 async function commentRender(post_id, user_id){
     try{
         await client.query("BEGIN")
-        const results = await client.query("SELECT * from board_comment_new where post_id = $1 order by group_num,order_in_group",[post_id])
+        const results = await client.query("SELECT bcn.*,ui.user_nickname from board_comment_new as bcn left join user_info as ui on bcn.user_id = ui.user_id where post_id = $1 order by group_num,order_in_group",[post_id])
         var comments = new Array()
         for(var i=0;i<results.rows.length;i++){
             var currentComment  = new Object()
-            const infoResult = await client.query("SELECT * from user_info where user_id = $1",[results.rows[i].user_id])
-            if(infoResult.rows[0].user_nickname==null){
-                currentComment.user_id = infoResult.rows[0].user_id
+            if(results.rows[i].user_nickname==null){
+                currentComment.user_id = results.rows[i].user_id
             }else{
-                currentComment.user_id = infoResult.rows[0].user_nickname
+                currentComment.user_id = results.rows[i].user_nickname
             }
             currentComment.comment_id = results.rows[i].comment_id
             currentComment.comment_body = results.rows[i].comment_body
