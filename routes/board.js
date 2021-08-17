@@ -325,6 +325,8 @@ router.post("/renderPost",async function(req,res){
 router.post("/addPost",async function(req,res){
     console.log("addPost is called")
     const {board_type,post_title,post_body,token} = req.body
+
+    //category_id와 imageInfoList 안보내도 작동은 함
     if(typeof req.body.category_id=="undefined"){
         var category_id = 1
     }else{
@@ -335,7 +337,7 @@ router.post("/addPost",async function(req,res){
     }else{
         var imageInfoList = req.body.imageInfoList
     }
-    
+
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
 
