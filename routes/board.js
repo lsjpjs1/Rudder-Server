@@ -285,8 +285,29 @@ function getVideoIdList(post_body){
     }
 }
 
+async function categoryList(){
+    try{
+        const results = await client.query("select * from category")
+        var categoryList = new Array()
+        for(result of results.rows){
+            var category = new Object()
+            category = result
+            categoryList.push(category)
+        }
+        return categoryList
+    }catch(ex){
+        console.log("Failed to execute categoryList"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
 
-
+router.post("/categoryList",async function(req,res){
+    const categories = await categoryList()
+    res.send(JSON.stringify({results:{categoryList:categories}}))
+})
 
 router.post("/editPost",async function(req,res){
     console.log("editPost is called") 
