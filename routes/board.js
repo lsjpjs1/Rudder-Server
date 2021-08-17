@@ -306,7 +306,7 @@ async function categoryList(){
 
 router.post("/categoryList",async function(req,res){
     const categories = await categoryList()
-    res.send(JSON.stringify({results:{categoryList:categories}}))
+    res.send(JSON.stringify({results:categories}))
 })
 
 router.post("/editPost",async function(req,res){
