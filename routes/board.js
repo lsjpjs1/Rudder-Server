@@ -17,9 +17,9 @@ async function renderPost(board_type,pagingIndex,endPostId){
         var offset = pagingIndex * POST_NUMBER_IN_ONE_PAGE
         
         if(offset == 0){
-            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id where board_type = $1 order by post_id desc limit 20 offset 0",[board_type])
+            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id where bt.board_type_name = $1 order by post_id desc limit 20 offset 0",[board_type])
         }else{
-            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id where board_type = $1 and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
+            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id where bt.board_type_name = $1 and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
         }
         
 
@@ -52,25 +52,25 @@ async function renderPost(board_type,pagingIndex,endPostId){
     }
 }
 
-async function addPost(board_type,post_title,post_body,user_id,imageInfoList,videoIdList){
-    try{
-        await client.query("BEGIN")
-        const result = await client.query("insert into board values (default, $1, $2, $3, default,0,0,0,$4) returning *",[user_id,post_title,post_body,board_type])
-        for(var i=0;i<imageInfoList.length;i++){
-            await client.query("insert into board_image values (default, $1, $2, $3, $4)",[result.rows[0].post_id,imageInfoList[i].file_link,imageInfoList[i].file_name,imageInfoList[i].file_size])
-        }
-        for(var i=0;i<videoIdList.length;i++){
-            await client.query("insert into board_video_id values ($1, $2)",[result.rows[0].post_id,videoIdList[i]])
-        }
-        await client.query("COMMIT")
-    }catch(ex){
-        console.log("Failed to execute addPost"+ex)
-        await client.query("ROLLBACK")
-    }finally{
-       // await client.end()
-        console.log("Cleaned.") 
-    }
-}
+// async function addPost(board_type,post_title,post_body,user_id,imageInfoList,videoIdList){
+//     try{
+//         await client.query("BEGIN")
+//         const result = await client.query("WITH row AS (select board_type_id from board_type where board_type_name = $1) insert into board values (default, $2, $3, $4, default,0,0,0,row.board_type_id,) returning *",[board_type,user_id,post_title,post_body])
+//         for(var i=0;i<imageInfoList.length;i++){
+//             await client.query("insert into board_image values (default, $1, $2, $3, $4)",[result.rows[0].post_id,imageInfoList[i].file_link,imageInfoList[i].file_name,imageInfoList[i].file_size])
+//         }
+//         for(var i=0;i<videoIdList.length;i++){
+//             await client.query("insert into board_video_id values ($1, $2)",[result.rows[0].post_id,videoIdList[i]])
+//         }
+//         await client.query("COMMIT")
+//     }catch(ex){
+//         console.log("Failed to execute addPost"+ex)
+//         await client.query("ROLLBACK")
+//     }finally{
+//        // await client.end()
+//         console.log("Cleaned.") 
+//     }
+// }
 
 async function showPost(user_id, post_id){
     try{
