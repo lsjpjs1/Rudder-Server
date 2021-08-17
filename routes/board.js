@@ -52,25 +52,25 @@ async function renderPost(board_type,pagingIndex,endPostId){
     }
 }
 
-// async function addPost(board_type,post_title,post_body,user_id,imageInfoList,videoIdList){
-//     try{
-//         await client.query("BEGIN")
-//         const result = await client.query("WITH row AS (select board_type_id from board_type where board_type_name = $1) insert into board values (default, $2, $3, $4, default,0,0,0,row.board_type_id,) returning *",[board_type,user_id,post_title,post_body])
-//         for(var i=0;i<imageInfoList.length;i++){
-//             await client.query("insert into board_image values (default, $1, $2, $3, $4)",[result.rows[0].post_id,imageInfoList[i].file_link,imageInfoList[i].file_name,imageInfoList[i].file_size])
-//         }
-//         for(var i=0;i<videoIdList.length;i++){
-//             await client.query("insert into board_video_id values ($1, $2)",[result.rows[0].post_id,videoIdList[i]])
-//         }
-//         await client.query("COMMIT")
-//     }catch(ex){
-//         console.log("Failed to execute addPost"+ex)
-//         await client.query("ROLLBACK")
-//     }finally{
-//        // await client.end()
-//         console.log("Cleaned.") 
-//     }
-// }
+async function addPost(board_type,post_title,post_body,user_id,imageInfoList,videoIdList,school_id,category_id){
+    try{
+        await client.query("BEGIN")
+        const result = await client.query("insert into board values (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),$5,$6) returning *",[user_id,post_title,post_body,board_type,category_id,school_id])
+        for(var i=0;i<imageInfoList.length;i++){
+            await client.query("insert into board_image values (default, $1, $2, $3, $4)",[result.rows[0].post_id,imageInfoList[i].file_link,imageInfoList[i].file_name,imageInfoList[i].file_size])
+        }
+        for(var i=0;i<videoIdList.length;i++){
+            await client.query("insert into board_video_id values ($1, $2)",[result.rows[0].post_id,videoIdList[i]])
+        }
+        await client.query("COMMIT")
+    }catch(ex){
+        console.log("Failed to execute addPost"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
 
 async function showPost(user_id, post_id){
     try{
@@ -324,13 +324,24 @@ router.post("/renderPost",async function(req,res){
 
 router.post("/addPost",async function(req,res){
     console.log("addPost is called")
-    const {board_type,post_title,post_body,token,imageInfoList} = req.body
+    const {board_type,post_title,post_body,token} = req.body
+    if(typeof req.body.category_id=="undefined"){
+        var category_id = 1
+    }else{
+        var category_id = req.body.category_id
+    }
+    if(typeof req.body.imageInfoList=="undefined"){
+        var imageInfoList = []
+    }else{
+        var imageInfoList = req.body.imageInfoList
+    }
+    
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
 
         const videoIdList=getVideoIdList(post_body)
-
-        await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+        console.log(imageInfoList)
+        await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList,temp.school_id,category_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
         
     }else{
         var result = JSON.stringify({results:{isSuccess:false}})
