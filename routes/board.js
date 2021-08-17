@@ -287,7 +287,7 @@ function getVideoIdList(post_body){
 
 async function categoryList(){
     try{
-        const results = await client.query("select * from category")
+        const results = await client.query("select * from category order by category_id")
         var categoryList = new Array()
         for(result of results.rows){
             var category = new Object()
