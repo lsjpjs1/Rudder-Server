@@ -91,7 +91,7 @@ async function signup(user_id,user_password,email,recommendationCode,school_id,c
 }
 
 router.post("/signupinsert",async function(req,res){
-    // user_id : int, user_password : String, email : String, recommendationCode : String, school_id : int, character_index : String, profile_body : String, user_nickname : String
+    // user_id : String, user_password : String, email : String, recommendationCode : String, school_id : int, character_index : String, profile_body : String, user_nickname : String
     const {user_id,user_password,email,recommendationCode,school_id,character_index,profile_body,user_nickname} = req.body
     console.log(req.body)
         
