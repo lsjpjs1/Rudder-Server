@@ -258,8 +258,6 @@ async function schoolList() {
 router.post("/validationToken",async function(req,res){
     const {token} = req.body
     console.log(token)
-    const tokenTmp = req.body
-    console.log(tokenTmp)
     const isTokenValid = await decodeToken(token)
     res.send(JSON.stringify({results:{isTokenValid:isTokenValid}}))
     
