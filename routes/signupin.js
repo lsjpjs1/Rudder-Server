@@ -310,8 +310,9 @@ router.post('/loginJWT', async function(req,res){
         if(await checkpassword(user_id,user_password)==true){
             const result=await client.query("select * from user_info where user_id=$1",[user_id])
             const user_info_id=result.rows[0].user_info_id
+            const school_id = result.rows[0].school_id
             //let {JWT_SECRET} = router.settings
-            let payload = {user_id:user_id,user_info_id:user_info_id}
+            let payload = {user_id:user_id,user_info_id:user_info_id,school_id:school_id}
             let options = {}
 
             jwt.sign(payload, SECRET_KEY, options, (err, token) => {
