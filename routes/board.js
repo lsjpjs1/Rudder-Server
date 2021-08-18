@@ -10,16 +10,26 @@ const tk = require("./tokenhandle");
 
 
 const POST_NUMBER_IN_ONE_PAGE = 20
-async function renderPost(board_type,pagingIndex,endPostId){
+async function renderPost(board_type,pagingIndex,endPostId,category_id=0){
     try{
         await client.query("BEGIN")
         
         var offset = pagingIndex * POST_NUMBER_IN_ONE_PAGE
-        
+        var baseQuery = "SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id where bt.board_type_name = $1 "
         if(offset == 0){
-            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id where board_type = $1 order by post_id desc limit 20 offset 0",[board_type])
+            if(category_id==0){
+                var results = await client.query(baseQuery+"order by post_id desc limit 20 offset 0",[board_type])
+            }else{
+                var results = await client.query(baseQuery+"and category_id=$2 order by post_id desc limit 20 offset 0",[board_type,category_id])
+            }
+            
         }else{
-            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id where board_type = $1 and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
+            if(category_id==0){
+                var results = await client.query(baseQuery+"and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
+            }else{
+                var results = await client.query(baseQuery+"and post_id <= $2 and category_id=$3 order by post_id desc limit 20 offset $4",[board_type,endPostId,category_id,offset])
+            }
+            
         }
         
 
@@ -52,10 +62,10 @@ async function renderPost(board_type,pagingIndex,endPostId){
     }
 }
 
-async function addPost(board_type,post_title,post_body,user_id,imageInfoList,videoIdList){
+async function addPost(board_type,post_title,post_body,user_id,imageInfoList,videoIdList,school_id,category_id){
     try{
         await client.query("BEGIN")
-        const result = await client.query("insert into board values (default, $1, $2, $3, default,0,0,0,$4) returning *",[user_id,post_title,post_body,board_type])
+        const result = await client.query("insert into board values (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),$5,$6) returning *",[user_id,post_title,post_body,board_type,category_id,school_id])
         for(var i=0;i<imageInfoList.length;i++){
             await client.query("insert into board_image values (default, $1, $2, $3, $4)",[result.rows[0].post_id,imageInfoList[i].file_link,imageInfoList[i].file_name,imageInfoList[i].file_size])
         }
@@ -285,8 +295,29 @@ function getVideoIdList(post_body){
     }
 }
 
+async function categoryList(){
+    try{
+        const results = await client.query("select * from category order by category_id")
+        var categoryList = new Array()
+        for(result of results.rows){
+            var category = new Object()
+            category = result
+            categoryList.push(category)
+        }
+        return categoryList
+    }catch(ex){
+        console.log("Failed to execute categoryList"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
 
-
+router.post("/categoryList",async function(req,res){
+    const categories = await categoryList()
+    res.send(JSON.stringify({results:categories}))
+})
 
 router.post("/editPost",async function(req,res){
     console.log("editPost is called") 
@@ -316,21 +347,34 @@ router.post("/deletePost",async function(req,res){
 router.post("/renderPost",async function(req,res){
     console.log("renderPost is called")
     
-    const {board_type,pagingIndex,endPostId} = req.body; 
+    const {board_type,pagingIndex,endPostId,category_id} = req.body; 
     console.log(board_type,pagingIndex,endPostId)
-    var jsonData= await renderPost(board_type,pagingIndex,endPostId);
+    var jsonData= await renderPost(board_type,pagingIndex,endPostId,category_id);
     res.send(jsonData);
 })
 
 router.post("/addPost",async function(req,res){
     console.log("addPost is called")
-    const {board_type,post_title,post_body,token,imageInfoList} = req.body
+    const {board_type,post_title,post_body,token} = req.body
+
+    //category_id와 imageInfoList 안보내도 작동은 함
+    if(typeof req.body.category_id=="undefined"){
+        var category_id = 1
+    }else{
+        var category_id = req.body.category_id
+    }
+    if(typeof req.body.imageInfoList=="undefined"){
+        var imageInfoList = []
+    }else{
+        var imageInfoList = req.body.imageInfoList
+    }
+
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
 
         const videoIdList=getVideoIdList(post_body)
-
-        await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+        console.log(imageInfoList)
+        await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList,temp.school_id,category_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
         
     }else{
         var result = JSON.stringify({results:{isSuccess:false}})
