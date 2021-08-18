@@ -10,16 +10,26 @@ const tk = require("./tokenhandle");
 
 
 const POST_NUMBER_IN_ONE_PAGE = 20
-async function renderPost(board_type,pagingIndex,endPostId){
+async function renderPost(board_type,pagingIndex,endPostId,category_id=0){
     try{
         await client.query("BEGIN")
         
         var offset = pagingIndex * POST_NUMBER_IN_ONE_PAGE
-        
+        var baseQuery = "SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id where bt.board_type_name = $1 "
         if(offset == 0){
-            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id where bt.board_type_name = $1 order by post_id desc limit 20 offset 0",[board_type])
+            if(category_id==0){
+                var results = await client.query(baseQuery+"order by post_id desc limit 20 offset 0",[board_type])
+            }else{
+                var results = await client.query(baseQuery+"and category_id=$2 order by post_id desc limit 20 offset 0",[board_type,category_id])
+            }
+            
         }else{
-            var results = await client.query("SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id where bt.board_type_name = $1 and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
+            if(category_id==0){
+                var results = await client.query(baseQuery+"and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
+            }else{
+                var results = await client.query(baseQuery+"and post_id <= $2 and category_id=$3 order by post_id desc limit 20 offset $4",[board_type,endPostId,category_id,offset])
+            }
+            
         }
         
 
@@ -337,9 +347,9 @@ router.post("/deletePost",async function(req,res){
 router.post("/renderPost",async function(req,res){
     console.log("renderPost is called")
     
-    const {board_type,pagingIndex,endPostId} = req.body; 
+    const {board_type,pagingIndex,endPostId,category_id} = req.body; 
     console.log(board_type,pagingIndex,endPostId)
-    var jsonData= await renderPost(board_type,pagingIndex,endPostId);
+    var jsonData= await renderPost(board_type,pagingIndex,endPostId,category_id);
     res.send(jsonData);
 })
 
