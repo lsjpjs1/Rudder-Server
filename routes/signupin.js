@@ -437,15 +437,15 @@ router.post("/checkCode",async function(req,res){
     result=await client.query("select * from email_verification_pw where email=$1 order by verification_id desc limit 1",[email])
 
 
+
     if(result.rows[0].verification_code==verifyCode || verifyCode=='853853'){
         sendPwToEmail(email)
-        res.send('Success')
+        res.send(JSON.stringify({results:{isSuccessForgot:true}}))
     }else{
-        res.send('Fail')
-    }
+        res.send(JSON.stringify({results:{isSuccessForgot:false}}))
         
 
-})
+}})
 
 async function sendPwToEmail(email) { 
     console.log(email)
