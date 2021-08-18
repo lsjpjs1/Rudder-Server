@@ -20,14 +20,14 @@ async function renderPost(board_type,pagingIndex,endPostId,category_id=0){
             if(category_id==0){
                 var results = await client.query(baseQuery+"order by post_id desc limit 20 offset 0",[board_type])
             }else{
-                var results = await client.query(baseQuery+"and category_id=$2 order by post_id desc limit 20 offset 0",[board_type,category_id])
+                var results = await client.query(baseQuery+"and b.category_id=$2 order by post_id desc limit 20 offset 0",[board_type,category_id])
             }
             
         }else{
             if(category_id==0){
                 var results = await client.query(baseQuery+"and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
             }else{
-                var results = await client.query(baseQuery+"and post_id <= $2 and category_id=$3 order by post_id desc limit 20 offset $4",[board_type,endPostId,category_id,offset])
+                var results = await client.query(baseQuery+"and post_id <= $2 and b.category_id=$3 order by post_id desc limit 20 offset $4",[board_type,endPostId,category_id,offset])
             }
             
         }
