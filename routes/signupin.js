@@ -388,9 +388,9 @@ router.post("/sendIdToEmail",async function(req,res){
               
               smtpTransport.close();
           });
-        res.send('true')
+          res.send(JSON.stringify({results:{isVerify:true}}))
     }else{
-        res.send('false')
+        res.send(JSON.stringify({results:{isVerify:false}}))
     }
     
         
