@@ -135,11 +135,12 @@ router.post("/checkCode",async function(req,res){
 
 
     if(result.rows[0].verification_code==verifyCode || verifyCode=='853853'){
+        
         res.send(JSON.stringify({results:{isSuccess:true}}))
     }else{
         res.send(JSON.stringify({results:{isSuccess:false}}))
     }
-        
+
 
 })
 
@@ -161,5 +162,8 @@ router.post("/isVerify",async function(req, res){
     
     
 })
+
+
+
 
 module.exports = router;
