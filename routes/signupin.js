@@ -404,11 +404,12 @@ router.post("/sendPwVerificationCode", async function(req,res){
     console.log(email)
     let authNum = Math.random().toString().substr(2,6);
 
-    if(checkemail(email)){
+    const result=await client.query("select * from user_info where user_email=$1",[email])
+    if(result.rows.length!=0){
+
         await client.query("insert into email_verification_pw values (default,$1, $2)",[email,authNum])
         await client.query("COMMIT")
-    
-        
+
         const mailOptions = {
             from: process.env.GOOGLE_USER,
             to: email,
@@ -417,13 +418,14 @@ router.post("/sendPwVerificationCode", async function(req,res){
           };
           
           await smtpTransport.sendMail(mailOptions, (error, responses) =>{
-              
-              smtpTransport.close();
-          });
-          res.send("success")
+            console.log(error,responses)
+            smtpTransport.close();
+        });
+          res.send(JSON.stringify({results:{sendPwVerificationCode:true}}))
     }else{
-        res.send("Please enter your valid Edinburgh school email")
+        res.send(JSON.stringify({results:{sendPwVerificationCode:false}}))
     }
+
 })
 
 router.post("/checkCode",async function(req,res){
