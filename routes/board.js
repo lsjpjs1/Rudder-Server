@@ -15,7 +15,7 @@ async function renderPost(board_type,pagingIndex,endPostId,category_id=0){
         await client.query("BEGIN")
         
         var offset = pagingIndex * POST_NUMBER_IN_ONE_PAGE
-        var baseQuery = "SELECT b.*,ui.user_nickname from board as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id where bt.board_type_name = $1 "
+        var baseQuery = "SELECT b.*,ui.user_nickname,c.category_name from board as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id left join category as c on b.category_id = c.category_id where bt.board_type_name = $1 "
         if(offset == 0){
             if(category_id==0){
                 var results = await client.query(baseQuery+"order by post_id desc limit 20 offset 0",[board_type])
@@ -49,6 +49,7 @@ async function renderPost(board_type,pagingIndex,endPostId,category_id=0){
             data.comment_count = results.rows[i].comment_count
             data.like_count = results.rows[i].like_count
             data.post_view = results.rows[i].post_view
+            data.category_name = results.rows[i].category_name
             post.push(data)
         }
         var jsonData = JSON.stringify(post)
