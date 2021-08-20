@@ -187,7 +187,7 @@ async function addLike(user_id,post_id,plusValue=1){
         if(plusValue==1){
             await client.query("insert into board_like values ($1, $2)",[post_id,user_id])
         }else{
-            await client.query("delete from board_like where post_id=$1, user_id=$2",[post_id,user_id])
+            await client.query("delete from board_like where post_id=$1 and user_id=$2",[post_id,user_id])
         }
         await client.query("update board set like_count = like_count+$1 where post_id=($2)",[plusValue,post_id])
         await client.query("COMMIT")
@@ -413,7 +413,7 @@ router.post("/addlike",async function(req,res){
         var temp = jwt.verify(token,SECRET_KEY)
         await addLike(temp.user_id,post_id,plusValue).then(JSON.stringify({results:{isSuccess:true}}));
         
-        
+
     }else{
         res.send(JSON.stringify({results:{isSuccess:false}}))
     }
