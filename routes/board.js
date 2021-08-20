@@ -411,10 +411,10 @@ router.post("/addlike",async function(req,res){
 
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
-        await addLike(temp.user_id,post_id,plusValue).then(res.send("like_count is increased"));
+        await addLike(temp.user_id,post_id,plusValue).then(JSON.stringify({results:{isSuccess:true}}));
         
     }else{
-        res.send('error')
+        res.send(JSON.stringify({results:{isSuccess:false}}))
     }
     
 })
