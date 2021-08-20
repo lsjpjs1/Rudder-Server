@@ -321,6 +321,20 @@ async function categoryList(){
     }
 }
 
+async function addPostViewCount(post_id){
+    try{
+        await client.query("BEGIN")
+        await client.query("update board set post_view=post_view+1 where post_id = $1",[post_id])
+        await client.query("COMMIT")
+    }catch(ex){
+        console.log("Failed to execute addPostViewCount"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
 router.post("/categoryList",async function(req,res){
     const categories = await categoryList()
     res.send(JSON.stringify({results:categories}))
@@ -377,6 +391,14 @@ router.post("/addPost",async function(req,res){
         var result = JSON.stringify({results:{isSuccess:false}})
         res.send(result)
     }
+})
+
+
+
+router.post("/addPostViewCount",async function(req,res){
+    console.log("addPostViewCount is called")
+    const {post_id} = req.body
+    await addPostViewCount(post_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
 })
 
 router.post("/showPost",async function(req,res){
