@@ -422,13 +422,13 @@ router.post("/isLiked",async function(req,res){
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
         if(await isLiked(temp.user_id,post_id)){
-            res.send('true')
+            res.send(JSON.stringify({results:{isSuccess:true}}))
         }else{
-            res.send('false')
+            res.send(JSON.stringify({results:{isSuccess:false}}))
         }
         
     }else{
-        res.send('error')
+        res.send(JSON.stringify({results:{isSuccess:false}}))
     }
 })
 
