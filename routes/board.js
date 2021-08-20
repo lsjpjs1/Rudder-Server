@@ -8,7 +8,7 @@ require('dotenv').config({path:'./.env'});
 const SECRET_KEY = process.env.JWT_SECRET
 const tk = require("./tokenhandle");
 
-const noCategoryName = 'No category'
+const NO_CATEGORY_NAME = 'No category'
 
 const POST_NUMBER_IN_ONE_PAGE = 20
 async function renderPost(board_type,pagingIndex,endPostId,category_id=0){
@@ -64,7 +64,7 @@ async function renderPost(board_type,pagingIndex,endPostId,category_id=0){
     }
 }
 
-async function addPost(board_type,post_title,post_body,user_id,imageInfoList=[],videoIdList,school_id,category_name=noCategoryName){
+async function addPost(board_type,post_title,post_body,user_id,imageInfoList=[],videoIdList,school_id,category_name=NO_CATEGORY_NAME){
     try{
         await client.query("BEGIN")
         const result = await client.query("insert into board values (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),(select category_id from category where category_name = $5),$6) returning *",[user_id,post_title,post_body,board_type,category_name,school_id])
