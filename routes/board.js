@@ -25,9 +25,9 @@ async function renderPost(board_type,endPostId,category_id=0,user_id){
             
         }else{
             if(category_id==0){
-                var results = await client.query(baseQuery+"and post_id <= $3 order by post_id desc limit $4",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE])
+                var results = await client.query(baseQuery+"and post_id < $3 order by post_id desc limit $4",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE])
             }else{
-                var results = await client.query(baseQuery+"and post_id <= $3 and b.category_id=$4 order by post_id desc limit $5",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE])
+                var results = await client.query(baseQuery+"and post_id < $3 and b.category_id=$4 order by post_id desc limit $5",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE])
             }
             
         }
