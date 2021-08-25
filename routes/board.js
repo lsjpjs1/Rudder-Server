@@ -11,24 +11,24 @@ const tk = require("./tokenhandle");
 const NO_CATEGORY_NAME = 'No category'
 
 const POST_NUMBER_IN_ONE_PAGE = 20
-async function renderPost(board_type,pagingIndex,endPostId,category_id=0){
+async function renderPost(board_type,pagingIndex,endPostId,category_id=0,user_id){
     try{
         await client.query("BEGIN")
         
         var offset = pagingIndex * POST_NUMBER_IN_ONE_PAGE
-        var baseQuery = "SELECT b.*,ui.user_nickname,c.* from board as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id left join category as c on b.category_id = c.category_id where bt.board_type_name = $1 "
+        var baseQuery = "SELECT b.*,ui.user_nickname,c.* from (select left_join_res.* from (select b.*,bl.user_id as like_user_id from board as b left join (select * from board_like where user_id=$1) as bl on b.post_id = bl.post_id order by b.post_id) as left_join_res) as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id left join category as c on b.category_id = c.category_id where bt.board_type_name = $2 "
         if(offset == 0){
             if(category_id==0){
-                var results = await client.query(baseQuery+"order by post_id desc limit 20 offset 0",[board_type])
+                var results = await client.query(baseQuery+"order by post_id desc limit 20 offset 0",[user_id,board_type])
             }else{
-                var results = await client.query(baseQuery+"and b.category_id=$2 order by post_id desc limit 20 offset 0",[board_type,category_id])
+                var results = await client.query(baseQuery+"and b.category_id=$2 order by post_id desc limit 20 offset 0",[user_id,board_type,category_id])
             }
             
         }else{
             if(category_id==0){
-                var results = await client.query(baseQuery+"and post_id <= $2 order by post_id desc limit 20 offset $3",[board_type,endPostId,offset])
+                var results = await client.query(baseQuery+"and post_id <= $2 order by post_id desc limit 20 offset $3",[user_id,board_type,endPostId,offset])
             }else{
-                var results = await client.query(baseQuery+"and post_id <= $2 and b.category_id=$3 order by post_id desc limit 20 offset $4",[board_type,endPostId,category_id,offset])
+                var results = await client.query(baseQuery+"and post_id <= $2 and b.category_id=$3 order by post_id desc limit 20 offset $4",[user_id,board_type,endPostId,category_id,offset])
             }
             
         }
@@ -52,6 +52,14 @@ async function renderPost(board_type,pagingIndex,endPostId,category_id=0){
             data.post_view = results.rows[i].post_view
             data.category_id = results.rows[i].category_id
             data.category_name = results.rows[i].category_name
+
+            if(results.rows[i].like_user_id==null){
+                data.isLiked = false
+            }else{
+                data.isLiked = true
+            }
+
+
             post.push(data)
         }
         var jsonData = JSON.stringify(post)
@@ -368,10 +376,15 @@ router.post("/deletePost",async function(req,res){
 router.post("/renderPost",async function(req,res){
     console.log("renderPost is called")
     
-    const {board_type,pagingIndex,endPostId,category_id} = req.body; 
+    const {board_type,pagingIndex,endPostId,category_id,token} = req.body; 
     console.log(board_type,pagingIndex,endPostId)
-    var jsonData= await renderPost(board_type,pagingIndex,endPostId,category_id);
-    res.send(jsonData);
+    
+    if(tk.decodeToken(token)){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        var jsonData= await renderPost(board_type,pagingIndex,endPostId,category_id,tmp.user_id);
+        res.send(jsonData);
+    }
+    
 })
 
 router.post("/addPost",async function(req,res){
