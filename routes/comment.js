@@ -11,7 +11,7 @@ const tk = require("./tokenhandle");
 async function commentRender(post_id, user_id){
     try{
         await client.query("BEGIN")
-        const results = await client.query("SELECT bcn.*,ui.user_nickname from board_comment_new as bcn left join user_info as ui on bcn.user_id = ui.user_id where post_id = $1 order by group_num,order_in_group",[post_id])
+        const results = await client.query("select left_join_res.*,bcl.user_id as like_user_id from (SELECT bcn.*,ui.user_nickname from board_comment_new as bcn left join user_info as ui on bcn.user_id = ui.user_id where post_id = $1 order by group_num,order_in_group) as left_join_res left join (select * from board_comment_like where user_id = $2) as bcl on left_join_res.comment_id = bcl.comment_id",[post_id,user_id])
         var comments = new Array()
         for(var i=0;i<results.rows.length;i++){
             var currentComment  = new Object()
@@ -30,7 +30,9 @@ async function commentRender(post_id, user_id){
             currentComment.group_num=results.rows[i].group_num
 
             currentComment.isMine=false
-           if(user_id==results.rows[i].user_id)currentComment.isMine=true
+            if(user_id==results.rows[i].user_id)currentComment.isMine=true
+            currentComment.isLiked=false
+            if(user_id==results.rows[i].like_user_id)currentComment.isLiked=true
             comments.push(currentComment)
         }
         return comments;
