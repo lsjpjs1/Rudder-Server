@@ -87,11 +87,11 @@ async function addLike(user_id,comment_id,plusValue=1){
 
 router.post("/addlike",async function(req,res){
     console.log("addlike is called")
-    const {commnet_id,token,plusValue} = req.body
+    const {comment_id,token,plusValue} = req.body
 
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
-        await addLike(temp.user_id,commnet_id,plusValue).then(res.send(JSON.stringify({results:{isSuccess:true}})));
+        await addLike(temp.user_id,comment_id,plusValue).then(res.send(JSON.stringify({results:{isSuccess:true}})));
         
 
     }else{
