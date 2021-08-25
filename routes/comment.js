@@ -66,6 +66,40 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
     }
 }
 
+async function addLike(user_id,comment_id,plusValue=1){
+    try{
+        await client.query("BEGIN")
+        if(plusValue==1){
+            await client.query("insert into board_comment_like values ($1, $2)",[comment_id,user_id])
+        }else{
+            await client.query("delete from board_comment_like where comment_id=$1 and user_id=$2",[comment_id,user_id])
+        }
+        await client.query("update board_comment_new set like_count = like_count+$1 where comment_id=($2)",[plusValue,comment_id])
+        await client.query("COMMIT")
+    }catch(ex){
+        console.log("Failed to execute addLikeComment"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/addlike",async function(req,res){
+    console.log("addlike is called")
+    const {commnet_id,token,plusValue} = req.body
+
+    if(tk.decodeToken(token)){
+        var temp = jwt.verify(token,SECRET_KEY)
+        await addLike(temp.user_id,commnet_id,plusValue).then(res.send(JSON.stringify({results:{isSuccess:true}})));
+        
+
+    }else{
+        res.send(JSON.stringify({results:{isSuccess:false}}))
+    }
+    
+})
+
 router.post("/addComment",async function(req,res){
     console.log("addComment is called")
     //일반 댓글일 경우 group_num  -> -1로 request, 대댓글일 경우 부모 댓글의 group_num
