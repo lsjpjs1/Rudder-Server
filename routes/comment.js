@@ -28,7 +28,7 @@ async function commentRender(post_id, user_id){
             currentComment.status =results.rows[i].status
             currentComment.order_in_group=results.rows[i].order_in_group
             currentComment.group_num=results.rows[i].group_num
-
+            currentComment.is_delete = results.rows[i].is_delete
             currentComment.isMine=false
             if(user_id==results.rows[i].user_id)currentComment.isMine=true
             currentComment.isLiked=false
