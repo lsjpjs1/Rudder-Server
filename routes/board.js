@@ -15,19 +15,32 @@ async function renderPost(board_type,endPostId,category_id=0,user_id){
     try{
         await client.query("BEGIN")
         
-        var baseQuery = "SELECT b.*,ui.user_nickname,c.* from (select left_join_res.* from (select b.*,bl.user_id as like_user_id from board as b left join (select * from board_like where user_id=$1) as bl on b.post_id = bl.post_id order by b.post_id) as left_join_res) as b left join user_info as ui on b.user_id = ui.user_id left join board_type as bt on b.board_type_id = bt.board_type_id left join category as c on b.category_id = c.category_id where bt.board_type_name = $2 "
+        var baseQuery = "SELECT b.*,ui.user_nickname,c.* from \
+        (select left_join_res.* from \
+            (select b.*,bl.user_id as like_user_id from \
+                board as b left join \
+                (select * from board_like where user_id=$1) as bl \
+                on b.post_id = bl.post_id order by b.post_id) as left_join_res) as b \
+                left join user_info as ui on b.user_id = ui.user_id \
+                left join board_type as bt on b.board_type_id = bt.board_type_id \
+                left join category as c on b.category_id = c.category_id \
+                where bt.board_type_name = $2 and b.is_delete = false "
         if(endPostId == -1){
             if(category_id==0){
-                var results = await client.query(baseQuery+"order by post_id desc limit $3",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE])
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
+                order by post_id desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE])
             }else{
-                var results = await client.query(baseQuery+"and b.category_id=$3 order by post_id desc limit $4",[user_id,board_type,category_id,POST_NUMBER_IN_ONE_PAGE])
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
+                and b.category_id=$4 order by post_id desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,category_id])
             }
             
         }else{
             if(category_id==0){
-                var results = await client.query(baseQuery+"and post_id < $3 order by post_id desc limit $4",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE])
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
+                and post_id < $3 order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE])
             }else{
-                var results = await client.query(baseQuery+"and post_id < $3 and b.category_id=$4 order by post_id desc limit $5",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE])
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
+                and post_id < $3 and b.category_id=$4 order by post_id desc limit $5",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE])
             }
             
         }
@@ -51,7 +64,7 @@ async function renderPost(board_type,endPostId,category_id=0,user_id){
             data.post_view = results.rows[i].post_view
             data.category_id = results.rows[i].category_id
             data.category_name = results.rows[i].category_name
-
+            data.is_delete = results.rows[i].is_delete
             if(results.rows[i].like_user_id==null){
                 data.isLiked = false
             }else{
