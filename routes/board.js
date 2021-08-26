@@ -51,9 +51,9 @@ async function renderPost(board_type,endPostId,category_id=0,user_id){
             var data = new Object()
             data.post_id = results.rows[i].post_id
             if(results.rows[i].user_nickname==null){
-                data.user_id = results.rows[i].user_id
+                data.user_id = results.rows[i].user_id.substr(0,1)+'******'
             }else{
-                data.user_id = results.rows[i].user_nickname
+                data.user_id = results.rows[i].user_nickname.substr(0,1)+'******'
             }
             
             data.post_body = results.rows[i].post_body

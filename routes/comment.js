@@ -16,9 +16,9 @@ async function commentRender(post_id, user_id){
         for(var i=0;i<results.rows.length;i++){
             var currentComment  = new Object()
             if(results.rows[i].user_nickname==null){
-                currentComment.user_id = results.rows[i].user_id
+                currentComment.user_id = results.rows[i].user_id.substr(0,1)+'******'
             }else{
-                currentComment.user_id = results.rows[i].user_nickname
+                currentComment.user_id = results.rows[i].user_nickname.substr(0,1)+'******'
             }
             currentComment.comment_id = results.rows[i].comment_id
             currentComment.comment_body = results.rows[i].comment_body
