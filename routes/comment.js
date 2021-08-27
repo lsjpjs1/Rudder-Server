@@ -76,7 +76,7 @@ async function addLike(user_id,comment_id,plusValue=1){
         }
         await client.query("update board_comment_new set like_count = like_count+$1 where comment_id=($2)",[plusValue,comment_id])
         await client.query("COMMIT")
-        const likeCountResult = await client.query("select like_count from board_comment where comment_id=$1",[comment_id])
+        const likeCountResult = await client.query("select like_count from board_comment_new where comment_id=$1",[comment_id])
         return likeCountResult.rows[0].like_count
     }catch(ex){
         console.log("Failed to execute addLikeComment"+ex)
