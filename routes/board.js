@@ -258,9 +258,7 @@ async function addComment(user_id,post_id, comment_body){
 async function deletePost(post_id){
     try{
         await client.query("BEGIN")
-        await client.query("delete from board_like where post_id = $1",[post_id])
-        await client.query("delete from board_comment where post_id = $1",[post_id])
-        await client.query("delete from board where post_id = $1",[post_id])
+        await client.query("update board set is_delete=true where post_id = $1",[post_id])
         await client.query("COMMIT")
     }catch(ex){
         console.log("Failed to execute deletePost"+ex)
@@ -274,7 +272,7 @@ async function deletePost(post_id){
 async function deleteComment(comment_id, post_id){
     try{
         await client.query("BEGIN")
-        await client.query("delete from board_comment where comment_id = $1",[comment_id])
+        await client.query("update board_comment_new set is_delete=true where comment_id = $1",[comment_id])
         await client.query("update board set comment_count = comment_count-1 where post_id=($1)",[post_id])
         await client.query("COMMIT")
     }catch(ex){
