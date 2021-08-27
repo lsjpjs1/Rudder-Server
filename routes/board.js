@@ -211,6 +211,8 @@ async function addLike(user_id,post_id,plusValue=1){
         }
         await client.query("update board set like_count = like_count+$1 where post_id=($2)",[plusValue,post_id])
         await client.query("COMMIT")
+        const likeCountResult = await client.query("select like_count from board where post_id=$1",[post_id])
+        return likeCountResult.rows[0].like_count
     }catch(ex){
         console.log("Failed to execute addLike"+ex)
         await client.query("ROLLBACK")
@@ -456,8 +458,8 @@ router.post("/addlike",async function(req,res){
 
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
-        await addLike(temp.user_id,post_id,plusValue).then(res.send(JSON.stringify({results:{isSuccess:true}})));
-        
+        const like_count = await addLike(temp.user_id,post_id,plusValue)
+        res.send(JSON.stringify({results:{isSuccess:true,like_count:like_count}}))
 
     }else{
         res.send(JSON.stringify({results:{isSuccess:false}}))
