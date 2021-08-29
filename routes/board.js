@@ -8,6 +8,10 @@ require('dotenv').config({path:'./.env'});
 const SECRET_KEY = process.env.JWT_SECRET
 const tk = require("./tokenhandle");
 
+var AWS = require('aws-sdk')
+AWS.config.update({region: 'ap-northeast-2'})
+const s3 = new AWS.S3({apiVersion: '2006-03-01'});
+
 const NO_CATEGORY_NAME = 'No category'
 
 const POST_NUMBER_IN_ONE_PAGE = 20
@@ -354,6 +358,16 @@ async function addPostViewCount(post_id){
         console.log("Cleaned.") 
     }
 }
+
+router.post("/getSignedUrl",async function(req,res){
+    const {contentType} = req.body
+    const url = s3.getSignedUrl("putObject",{
+        Bucket: "",
+        Key: "test",
+        ContentType: contentType
+    })
+    res.send(JSON.stringify({results:{url:url}}))
+})
 
 router.post("/categoryList",async function(req,res){
     const categories = await categoryList()
