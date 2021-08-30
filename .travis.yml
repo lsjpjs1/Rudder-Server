@@ -1,0 +1,50 @@
+sudo: required
+
+language: generic
+
+services:
+  - docker
+
+before_install:
+  - echo "start creating an image with dockerfile"
+  - docker build -t rudder-server -f Dockerfile .
+
+
+after_success:
+  - echo "Test success"
+
+before_deploy:
+  - zip -r rudder-server .
+  - mkdir -p deploy
+  - mv rudder-server.zip deploy/rudder-server.zip
+
+deploy:
+  - provider: s3
+    bucket: rudder-docker
+    region: ap-northeast-2
+    local_dir: deploy
+    skip_cleanup: true
+    wait_until_deploy: true
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    on:
+      branch: master
+    
+  - provider: codedeploy
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    bucket: rudder-docker
+    key: rudder-server.zip
+    bundle_type: zip
+    application: rudder-codedeploy-app
+    deployment_group: rudder-codedeploy-group
+    region: ap-northeast-2
+    wait_until_deployed : true
+    on:
+      branch: master
+
+
+notificaitons:
+  email:
+    recipients:
+      - lsjpjs1@naver.com

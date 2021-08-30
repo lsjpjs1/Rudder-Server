@@ -1,0 +1,18 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/rudder-docker
+  
+permissions:
+  - object: /
+    pattern: "**"
+    owner: bitnami
+    group: bitnami
+    mode: 777
+  
+hooks:
+  ApplicationStart:
+    - location: deploy.sh
+      timeout: 100
+      runas: bitnami
