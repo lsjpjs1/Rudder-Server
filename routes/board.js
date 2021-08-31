@@ -107,6 +107,7 @@ async function addPost(board_type,post_title,post_body,user_id,imageInfoList=[],
             await client.query("insert into board_video_id values ($1, $2)",[result.rows[0].post_id,videoIdList[i]])
         }
         await client.query("COMMIT")
+        return result.rows[0].post_id
     }catch(ex){
         console.log("Failed to execute addPost"+ex)
         await client.query("ROLLBACK")
@@ -353,14 +354,33 @@ async function addPostViewCount(post_id){
     }
 }
 
-async function getUploadSignedUrls(contentTypes,user_info_id){
+async function addPostImage(post_id,fileNameList){
+    try{
+        await client.query("BEGIN")
+        for(fileName of fileNameList){
+            await client.query("insert into board_image values (default,$1,default,$2,default)",[post_id,fileName])
+        }
+        await client.query("COMMIT")
+    }catch(ex){
+        console.log("Failed to execute addPostViewCount"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+async function getUploadSignedUrls(contentTypes,user_info_id,post_id){
     try{
         var urlList = new Array()
+        var fileNameList = new Array()
         for(contentType of new Array().concat(contentTypes)){
             var obj = new Object()
+            const fileName = user_info_id.toString()+new Date().getTime().toString()
+            fileNameList.push(fileName)
             const command = new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET_NAME,
-                Key: user_info_id.toString()+new Date().getTime().toString(),
+                Key: fileName,
                 ContentType: contentType,
             })
             obj.url = await getSignedUrl(s3Client, command, {
@@ -368,6 +388,7 @@ async function getUploadSignedUrls(contentTypes,user_info_id){
             })
             urlList.push(obj)
         }
+        await addPostImage(post_id,fileNameList)
         return urlList
         
     }catch(ex){
@@ -379,10 +400,10 @@ async function getUploadSignedUrls(contentTypes,user_info_id){
 }
 
 router.post("/getUploadSignedUrls",async function(req,res){
-    const {contentTypes,token} = req.body
+    const {contentTypes,token,post_id} = req.body
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
-        const urls = await getUploadSignedUrls(contentTypes,temp.user_info_id)
+        const urls = await getUploadSignedUrls(contentTypes,temp.user_info_id,post_id)
         res.send(JSON.stringify({results:{urls:urls}}))
     }
     
@@ -451,7 +472,8 @@ router.post("/addPost",async function(req,res){
 
         const videoIdList=getVideoIdList(post_body)
         console.log(imageInfoList)
-        await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList,temp.school_id,category_name).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+        const post_id = await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList,temp.school_id,category_name)
+        res.send(JSON.stringify({results:{isSuccess:true,post_id:post_id}}))
         
     }else{
         var result = JSON.stringify({results:{isSuccess:false}})
