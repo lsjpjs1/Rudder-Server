@@ -105,9 +105,8 @@ async function deleteComment(comment_id, post_id){
 router.post("/deleteComment",async function(req,res){
     console.log("deleteComment is called")
     const {comment_id,post_id} = req.body
-    await deleteComment(comment_id,post_id).then(res.send("finish"));
+    await deleteComment(comment_id,post_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
 })
-
 
 router.post("/addlike",async function(req,res){
     console.log("addlike is called")

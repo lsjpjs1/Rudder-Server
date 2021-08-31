@@ -443,8 +443,8 @@ router.post("/editPost",async function(req,res){
 router.post("/deletePost",async function(req,res){
     console.log("deletePost is called")
     const {post_id} = req.body
-    await deletePost(post_id)
-    res.send("finish")
+    await deletePost(post_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+    
 })
 
 router.post("/renderPost",async function(req,res){
