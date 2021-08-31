@@ -360,7 +360,7 @@ async function getUploadSignedUrls(contentTypes,user_info_id){
             var obj = new Object()
             const command = new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET_NAME,
-                Key: user_info_id.toString()+new Date().getTime().toString(),
+                Key: user_info_id.toString()+new Date().getTime().toString()+".jpg",
                 ContentType: contentType,
             })
             obj.url = await getSignedUrl(s3Client, command, {
