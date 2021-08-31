@@ -282,20 +282,7 @@ async function deletePost(post_id){
     }
 }
 
-async function deleteComment(comment_id, post_id){
-    try{
-        await client.query("BEGIN")
-        await client.query("update board_comment_new set is_delete=true where comment_id = $1",[comment_id])
-        await client.query("update board set comment_count = comment_count-1 where post_id=($1)",[post_id])
-        await client.query("COMMIT")
-    }catch(ex){
-        console.log("Failed to execute deleteComment"+ex)
-        await client.query("ROLLBACK")
-    }finally{
-       // await client.end()
-        console.log("Cleaned.") 
-    }
-}
+
 
 async function editPost(post_id,post_title,post_body){
     try{
@@ -431,11 +418,6 @@ router.post("/editPost",async function(req,res){
     }
 })
 
-router.post("/deleteComment",async function(req,res){
-    console.log("deleteComment is called")
-    const {comment_id,post_id} = req.body
-    await deleteComment(comment_id,post_id).then(res.send("finish"));
-})
 
 router.post("/deletePost",async function(req,res){
     console.log("deletePost is called")
