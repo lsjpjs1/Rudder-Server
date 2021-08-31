@@ -26,7 +26,7 @@ async function renderPost(board_type,endPostId,category_id=0,user_id){
     try{
         await client.query("BEGIN");
         
-        var baseQuery = "SELECT b.*,ui.user_nickname,c.* from \
+        var baseQuery = "SELECT b.*,ui.user_nickname,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
         (select left_join_res.* from \
             (select b.*,bl.user_id as like_user_id from \
                 board as b left join \
@@ -35,11 +35,12 @@ async function renderPost(board_type,endPostId,category_id=0,user_id){
                 left join user_info as ui on b.user_id = ui.user_id \
                 left join board_type as bt on b.board_type_id = bt.board_type_id \
                 left join category as c on b.category_id = c.category_id \
-                where bt.board_type_name = $2 and b.is_delete = false "
+                left join board_image as b_image on b.post_id = b_image.post_id \
+                group by b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name having bt.board_type_name = $2 and b.is_delete = false "
         if(endPostId == -1){
             if(category_id==0){
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
-                order by post_id desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE])
+                order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE])
             }else{
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and category_id=$4 order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
                 and b.category_id=$4 order by post_id desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,category_id])
@@ -76,6 +77,13 @@ async function renderPost(board_type,endPostId,category_id=0,user_id){
             data.category_id = results.rows[i].category_id
             data.category_name = results.rows[i].category_name
             data.is_delete = results.rows[i].is_delete
+            data.imageUrls = new Array()
+            if(results.rows[i].image_names!=null){
+                for(image_name of results.rows[i].image_names.split(',')){
+                    data.imageUrls.push(process.env.CLOUDFRONT_URL+image_name)
+                }
+            }   
+            console.log(data.imageUrls)
             if(results.rows[i].like_user_id==null){
                 data.isLiked = false
             }else{
