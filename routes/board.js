@@ -49,10 +49,10 @@ async function renderPost(board_type,endPostId,category_id=0,user_id){
         }else{
             if(category_id==0){
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
-                and post_id < $3 order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE])
+                and b.post_id < $3 order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE])
             }else{
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and category_id=$4 order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
-                and post_id < $3 and b.category_id=$4 order by post_id desc limit $5",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE])
+                and b.post_id < $3 and b.category_id=$4 order by post_id desc limit $5",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE])
             }
             
         }
