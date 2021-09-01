@@ -89,7 +89,10 @@ async function renderPost(board_type,endPostId,category_id=0,user_id){
             }else{
                 data.isLiked = true
             }
-
+            data.isMine=false
+            if(results.rows[i].user_id==user_id){
+                data.isMine=true
+            }
 
             post.push(data)
         }
