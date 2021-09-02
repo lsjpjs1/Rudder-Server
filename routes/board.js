@@ -484,6 +484,7 @@ router.post("/renderPost",async function(req,res){
     
     const {board_type,endPostId,category_id,token} = req.body; 
     console.log(board_type,endPostId)
+    console.log(req.headers)
     
     if(tk.decodeToken(token)){
         const tmp = jwt.verify(token,SECRET_KEY)
