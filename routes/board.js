@@ -36,7 +36,7 @@ async function renderPost(board_type,endPostId,category_id=0,user_id,school_id){
                 left join board_type as bt on b.board_type_id = bt.board_type_id \
                 left join category as c on b.category_id = c.category_id \
                 left join board_image as b_image on b.post_id = b_image.post_id \
-                group by b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name \
+                group by b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit \
                 having bt.board_type_name = $2 and b.is_delete = false "
         if(endPostId == -1){
             if(category_id==0){
@@ -294,7 +294,26 @@ async function deletePost(post_id){
     }
 }
 
-
+// async function addPost(board_type,post_title,post_body,user_id,imageInfoList=[],videoIdList,school_id,category_name=NO_CATEGORY_NAME){
+//     try{
+//         await client.query("BEGIN")
+//         const result = await client.query("insert into board values (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),(select category_id from category where category_name = $5),$6) returning *",[user_id,post_title,post_body,board_type,category_name,school_id])
+//         for(var i=0;i<imageInfoList.length;i++){
+//             await client.query("insert into board_image values (default, $1, $2, $3, $4)",[result.rows[0].post_id,imageInfoList[i].file_link,imageInfoList[i].file_name,imageInfoList[i].file_size])
+//         }
+//         for(var i=0;i<videoIdList.length;i++){
+//             await client.query("insert into board_video_id values ($1, $2)",[result.rows[0].post_id,videoIdList[i]])
+//         }
+//         await client.query("COMMIT")
+//         return result.rows[0].post_id
+//     }catch(ex){
+//         console.log("Failed to execute addPost"+ex)
+//         await client.query("ROLLBACK")
+//     }finally{
+//        // await client.end()
+//         console.log("Cleaned.") 
+//     }
+// }
 
 async function editPost(post_id,post_title,post_body){
     try{
