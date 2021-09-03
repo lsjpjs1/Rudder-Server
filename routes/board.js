@@ -442,6 +442,34 @@ async function getUploadSignedUrls(contentTypes,user_info_id,post_id){
     }
 }
 
+async function addUserSelectCategory(user_info_id,categoryIdList){
+    try{
+        await client.query("BEGIN")
+        for(category_id of categoryIdList){
+            await client.query("insert into user_select_category values \
+            (default,$1,$2)",[user_info_id,category_id])
+        }
+        await client.query("COMMIT")
+    }catch(ex){
+        console.log("Failed to execute addUserSelectCategory"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/addUserSelectCategory",async function(req,res){
+    const {token,categoryIdList} = req.body
+    console.log(categoryIdList)
+    if(tk.decodeToken(token)){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        await addUserSelectCategory(tmp.user_info_id,categoryIdList).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+    }
+    
+    
+})
+
 router.post("/getUploadSignedUrls",async function(req,res){
     const {contentTypes,token,post_id} = req.body
     if(tk.decodeToken(token)){
@@ -454,16 +482,6 @@ router.post("/getUploadSignedUrls",async function(req,res){
     
 })
 
-
-// commetList랑 병합 예정
-// router.post("/getImageSignedUrls",async function(req,res){
-//     const {post_id,token} = req.body
-  
- 
-//     res.send(JSON.stringify({results:{url:""}}))
-    
-
-// })
 
 router.post("/categoryList",async function(req,res){
     const categories = await categoryList()
