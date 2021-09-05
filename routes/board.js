@@ -22,7 +22,7 @@ const REGION = "ap-northeast-2"; //e.g. "us-east-1"
 const s3Client = new S3Client({ region: REGION,credentials:{accessKeyId:process.env.S3_ACCESS_KEY_ID,secretAccessKey:process.env.S3_SECRET_ACCESS_KEY} });
 
 
-async function renderPost(board_type,endPostId,category_id=0,user_id,school_id){
+async function renderPost(board_type,endPostId,category_id=-1,user_id,school_id){
     try{
         await client.query("BEGIN");
         
@@ -39,7 +39,7 @@ async function renderPost(board_type,endPostId,category_id=0,user_id,school_id){
                 group by b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit \
                 having bt.board_type_name = $2 and b.is_delete = false "
         if(endPostId == -1){
-            if(category_id==0){
+            if(category_id==-1){
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$4 order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id])
             }else{
@@ -48,7 +48,7 @@ async function renderPost(board_type,endPostId,category_id=0,user_id,school_id){
             }
             
         }else{
-            if(category_id==0){
+            if(category_id==-1){
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$5 and b.post_id < $3 order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE,school_id])
             }else{
@@ -110,13 +110,7 @@ async function renderPost(board_type,endPostId,category_id=0,user_id,school_id){
 async function addPost(board_type,post_title,post_body,user_id,imageInfoList=[],videoIdList,school_id,category_name=NO_CATEGORY_NAME){
     try{
         await client.query("BEGIN")
-        const result = await client.query("insert into board values (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),(select category_id from category where category_name = $5),$6) returning *",[user_id,post_title,post_body,board_type,category_name,school_id])
-        for(var i=0;i<imageInfoList.length;i++){
-            await client.query("insert into board_image values (default, $1, $2, $3, $4)",[result.rows[0].post_id,imageInfoList[i].file_link,imageInfoList[i].file_name,imageInfoList[i].file_size])
-        }
-        for(var i=0;i<videoIdList.length;i++){
-            await client.query("insert into board_video_id values ($1, $2)",[result.rows[0].post_id,videoIdList[i]])
-        }
+        const result = await client.query("insert into board values (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),(select category_id from category where category_name = $5 and school_id = $6),$6) returning *",[user_id,post_title,post_body,board_type,category_name,school_id])
         await client.query("COMMIT")
         return result.rows[0].post_id
     }catch(ex){
@@ -334,7 +328,7 @@ router.post("/editPost",async function(req,res){
     const {post_title,post_body,post_id,token,category_id}=req.body
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
-        await editPost(post_id,post_title,post_body,category_id).then(res.send("finish"))
+        await editPost(post_id,post_title,post_body,category_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
         
     }else{
         res.send('error')
@@ -441,6 +435,37 @@ async function getUploadSignedUrls(contentTypes,user_info_id,post_id){
         console.log("Cleaned.") 
     }
 }
+
+
+async function userSelectCategoryList(user_info_id){
+    try{
+        const results = await client.query("select * from category where category_id in (select category_id from user_select_category where user_info_id = $1) order by category_id ",[user_info_id])
+        var categoryList = new Array()
+        for(result of results.rows){
+            var category = new Object()
+            category = result
+            categoryList.push(category)
+        }
+        return categoryList
+    }catch(ex){
+        console.log("Failed to execute categoryList"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+
+router.post("/userSelectCategoryList",async function(req,res){
+    const {token} = req.body
+    if(tk.decodeToken){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        const categories = await userSelectCategoryList(tmp.user_info_id)
+        res.send(JSON.stringify({results:categories}))
+    }
+    
+})
 
 async function addUserSelectCategory(user_info_id,categoryIdList){
     try{
