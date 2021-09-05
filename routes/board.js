@@ -107,10 +107,19 @@ async function renderPost(board_type,endPostId,category_id=-1,user_id,school_id)
     }
 }
 
-async function addPost(board_type,post_title,post_body,user_id,imageInfoList=[],videoIdList,school_id,category_name=NO_CATEGORY_NAME){
+async function addPost(board_type,post_title,post_body,user_id,imageInfoList=[],videoIdList,school_id,category_id=-1){
     try{
         await client.query("BEGIN")
-        const result = await client.query("insert into board values (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),(select category_id from category where category_name = $5 and school_id = $6),$6) returning *",[user_id,post_title,post_body,board_type,category_name,school_id])
+        var result
+        if (category_id==-1){
+            result = await client.query("insert into board values \
+            (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),(select category_id from category where category_name = $5 and school_id = $6),$6) \
+            returning *",[user_id,post_title,post_body,board_type,NO_CATEGORY_NAME,school_id])
+        }else{
+            result = await client.query("insert into board values \
+            (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),$5,$6) \
+            returning *",[user_id,post_title,post_body,board_type,category_id,school_id])
+        }
         await client.query("COMMIT")
         return result.rows[0].post_id
     }catch(ex){
@@ -563,7 +572,7 @@ router.post("/renderPost",async function(req,res){
 
 router.post("/addPost",async function(req,res){
     console.log("addPost is called")
-    const {board_type,post_title,post_body,token,category_name,imageInfoList} = req.body
+    const {board_type,post_title,post_body,token,category_id,imageInfoList} = req.body
 
 
 
@@ -572,7 +581,7 @@ router.post("/addPost",async function(req,res){
 
         const videoIdList=getVideoIdList(post_body)
         console.log(imageInfoList)
-        const post_id = await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList,temp.school_id,category_name)
+        const post_id = await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList,temp.school_id,category_id)
         res.send(JSON.stringify({results:{isSuccess:true,post_id:post_id}}))
         
     }else{
