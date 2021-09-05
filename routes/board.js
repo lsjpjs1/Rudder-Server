@@ -457,15 +457,7 @@ async function userSelectCategoryList(user_info_id){
 }
 
 
-router.post("/userSelectCategoryList",async function(req,res){
-    const {token} = req.body
-    if(tk.decodeToken){
-        const tmp = jwt.verify(token,SECRET_KEY)
-        const categories = await userSelectCategoryList(tmp.user_info_id)
-        res.send(JSON.stringify({results:categories}))
-    }
-    
-})
+
 
 async function addUserSelectCategory(user_info_id,categoryIdList){
     try{
@@ -483,6 +475,39 @@ async function addUserSelectCategory(user_info_id,categoryIdList){
         console.log("Cleaned.") 
     }
 }
+
+async function requestAddCategory(user_info_id,category_name,requestBody){
+    try{
+        await client.query("BEGIN")
+            await client.query("insert into add_category_request values (default,$1,$2,$3)",[user_info_id,category_name,requestBody])
+        await client.query("COMMIT")
+    }catch(ex){
+        console.log("Failed to execute requestAddCategory"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/requestAddCategory",async function(req,res){
+    const {token,category_name,requestBody} = req.body
+    if(tk.decodeToken){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        await requestAddCategory(tmp.user_info_id,category_name,requestBody).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+    }
+    
+})
+
+router.post("/userSelectCategoryList",async function(req,res){
+    const {token} = req.body
+    if(tk.decodeToken){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        const categories = await userSelectCategoryList(tmp.user_info_id)
+        res.send(JSON.stringify({results:categories}))
+    }
+    
+})
 
 router.post("/addUserSelectCategory",async function(req,res){
     const {token,categoryIdList} = req.body
