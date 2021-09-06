@@ -102,6 +102,31 @@ async function deleteComment(comment_id, post_id){
     }
 }
 
+async function editComment(comment_body,comment_id){
+    try{
+        await client.query("BEGIN")
+        await client.query("update board_comment_new set comment_body=$1,is_edit=true where comment_id=$2",[comment_body,comment_id])
+        await client.query("COMMIT")
+    }catch(ex){
+        console.log("Failed to execute editComment"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/editComment",async function(req,res){
+    console.log("editComment is called") 
+    const {comment_body,comment_id,token}=req.body
+    if(tk.decodeToken(token)){
+        await editComment(comment_body,comment_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+        
+    }else{
+        res.send('error')
+    }
+})
+
 router.post("/deleteComment",async function(req,res){
     console.log("deleteComment is called")
     const {comment_id,post_id} = req.body
