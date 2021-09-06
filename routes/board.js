@@ -315,10 +315,10 @@ async function deletePost(post_id){
 //     }
 // }
 
-async function editPost(post_id,post_title,post_body,category_id){
+async function editPost(post_id,post_body,category_id){
     try{
         await client.query("BEGIN")
-        await client.query("update board set post_title=$1, post_body=$2,is_edit=true, category_id=$4 where post_id=$3",[post_title,post_body,post_id,category_id])
+        await client.query("update board set post_body=$1,is_edit=true, category_id=$3 where post_id=$2",[post_body,post_id,category_id])
         await client.query("COMMIT")
     }catch(ex){
         console.log("Failed to execute editPost"+ex)
@@ -331,10 +331,10 @@ async function editPost(post_id,post_title,post_body,category_id){
 
 router.post("/editPost",async function(req,res){
     console.log("editPost is called") 
-    const {post_title,post_body,post_id,token,category_id}=req.body
+    const {post_body,post_id,token,category_id}=req.body
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
-        await editPost(post_id,post_title,post_body,category_id).then(res.send("finish"))
+        await editPost(post_id,post_body,category_id).then(res.send("finish"))
         
     }else{
         res.send('error')
