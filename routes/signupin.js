@@ -255,6 +255,20 @@ async function schoolList() {
     }
 }
 
+async function updateNotificationToken(os,notification_code) { 
+    try{
+        await client.query("BEGIN")
+        
+        await client.query("update user_info set os = $1, notification_token = $2",[os,notification_code])
+        await client.query("COMMIT")
+    }catch(ex){
+        console.log("Failed to execute updateNotificationToken"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+        console.log("Cleaned.") 
+    }
+}
+
 router.post("/validationToken",async function(req,res){
     const {token} = req.body
     console.log(token)
@@ -303,11 +317,23 @@ router.post('/googleLogin', async function(req,res){
     
 })
 
+
+
 router.post('/loginJWT', async function(req,res){
-    const user_id = req.body.user_id;
-    const user_password = req.body.user_password;
+    const {user_id,user_password,notification_code} = req.body
+    var os
+    if(req.headers['user-agent']=='Android'){
+        os = 'android'
+    }else{
+        os = 'ios'
+    }
     if(await checkexist(user_id,user_password)==true){
         if(await checkpassword(user_id,user_password)==true){
+
+            if(typeof notification_code != "undefined"){
+                await updateNotificationToken(os,notification_code) // 알림 토큰 업데이트
+            }
+            
             const result=await client.query("select * from user_info where user_id=$1",[user_id])
             const user_info_id=result.rows[0].user_info_id
             const school_id = result.rows[0].school_id
