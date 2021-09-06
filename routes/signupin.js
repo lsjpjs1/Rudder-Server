@@ -320,7 +320,7 @@ router.post('/googleLogin', async function(req,res){
 
 
 router.post('/loginJWT', async function(req,res){
-    const {user_id,user_password,notification_code} = req.body
+    const {user_id,user_password,notification_token} = req.body
     var os
     if(req.headers['user-agent']=='Android'){
         os = 'android'
@@ -330,8 +330,8 @@ router.post('/loginJWT', async function(req,res){
     if(await checkexist(user_id,user_password)==true){
         if(await checkpassword(user_id,user_password)==true){
 
-            if(typeof notification_code != "undefined"){
-                await updateNotificationToken(os,notification_code) // 알림 토큰 업데이트
+            if(typeof notification_token != "undefined"){
+                await updateNotificationToken(os,notification_token) // 알림 토큰 업데이트
             }
             
             const result=await client.query("select * from user_info where user_id=$1",[user_id])
