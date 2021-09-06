@@ -8,6 +8,8 @@ require('dotenv').config({path:'./.env'});
 const SECRET_KEY = process.env.JWT_SECRET
 const tk = require("./tokenhandle");
 
+const request = require('request')
+
 async function commentRender(post_id, user_id){
     try{
         await client.query("BEGIN")
@@ -60,6 +62,38 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
     }catch(ex){
         console.log("Failed to execute addLike"+ex)
         await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+async function newCommentNotification(post_id){
+    try{
+        await client.query("BEGIN")
+        const result = await client.query("select notification_token from user_info where user_id = (select user_id from board where post_id = $1)",[post_id])
+        if(typeof result.rows[0].notification_token!='undefined'){
+            const options = {
+                uri:'https://fcm.googleapis.com/fcm/send', 
+                method: 'POST',
+                headers: {
+                    "content-type": "application/json",
+                    "Authorization": "key= "
+                },
+                json: {
+                    'to': result.rows[0].notification_token,
+                    'notification': {
+                       'title': '',
+                       'body': '잘 갔나요?'
+                       
+                    }
+                }
+              }
+            request.post(options, function(err,httpResponse,body){ /* ... */ })
+        }
+        
+    }catch(ex){
+        console.log("Failed to execute newCommentNotification"+ex)
     }finally{
        // await client.end()
         console.log("Cleaned.") 
@@ -156,6 +190,7 @@ router.post("/addComment",async function(req,res){
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
         await addComment(temp.user_id,post_id, comment_body,status,group_num).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+        await newCommentNotification(post_id)
         
     }else{
         res.send(JSON.stringify({results:{isSuccess:false}}))
