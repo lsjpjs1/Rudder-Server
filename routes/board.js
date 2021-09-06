@@ -431,7 +431,7 @@ async function getUploadSignedUrls(contentTypes,user_info_id,post_id){
             obj.url = await getSignedUrl(s3Client, command, {
                 expiresIn: 7200
             })
-            urlList.push(obj)
+            urlList.push(obj.url)
         }
         await addPostImage(post_id,fileNameList)
         return urlList
