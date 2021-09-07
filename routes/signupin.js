@@ -133,6 +133,38 @@ router.post("/checkduplication",async function(req,res){
 
 });
 
+async function checkEmailduplication(email){
+    try{
+        await client.query("BEGIN")
+        const results=await client.query("select user_email from user_info where user_email = $1",[email])
+        if(results.rows.length > 0){
+            console.log("email duplication")
+            return true;
+        }else{
+            return false;
+        }
+    }catch(ex){
+        console.log("Failed to execute signin"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+
+router.post("/checkEmailduplication",async function(req,res){
+
+    const {email} = req.body;
+    console.log(email)
+    const isDuplicated = await checkEmailduplication(email)
+    const result = JSON.stringify({results:{isDuplicated:isDuplicated}})
+    
+    res.send(result)
+
+
+});
+
 
 async function checkpassword(user_id, user_password){
     try{
