@@ -255,11 +255,11 @@ async function schoolList() {
     }
 }
 
-async function updateNotificationToken(os,notification_code) { 
+async function updateNotificationToken(os,notification_code,user_id) { 
     try{
         await client.query("BEGIN")
         
-        await client.query("update user_info set os = $1, notification_token = $2",[os,notification_code])
+        await client.query("update user_info set os = $1, notification_token = $2 where user_id = $3",[os,notification_code,user_id])
         await client.query("COMMIT")
     }catch(ex){
         console.log("Failed to execute updateNotificationToken"+ex)
@@ -326,7 +326,7 @@ router.post('/loginJWT', async function(req,res){
         if(await checkpassword(user_id,user_password)==true){
 
             if(typeof notification_token != "undefined" && typeof os != "undefined"){
-                await updateNotificationToken(os,notification_token) // 알림 토큰 업데이트
+                await updateNotificationToken(os,notification_token,user_id) // 알림 토큰 업데이트
             }
             
             const result=await client.query("select * from user_info where user_id=$1",[user_id])
