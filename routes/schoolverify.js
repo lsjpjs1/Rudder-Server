@@ -92,6 +92,26 @@ router.post("/",async function(req,res){
 
 })
 
+async function checkEmailduplication(email){
+    try{
+        await client.query("BEGIN")
+        const results=await client.query("select user_email from user_info where user_email = $1",[email])
+        if(results.rows.length > 0){
+            console.log("email duplication")
+            return true;
+        }else{
+            return false;
+        }
+    }catch(ex){
+        console.log("Failed to execute signin"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+
 router.post("/verifyEmail",async function(req,res){
     console.log("verifyEmail is called")
     const email=req.body.email;
@@ -99,25 +119,30 @@ console.log(email)
     let authNum = Math.random().toString().substr(2,6);
 
     if(checkemail(email)){
-        await client.query("insert into email_verification values (default,$1, $2)",[email,authNum])
-        await client.query("COMMIT")
-    
-        console.log(process.env.GOOGLE_USER,process.env.GOOGLE_PASS)
-        const mailOptions = {
-            from: process.env.GOOGLE_USER,
-            to: email,
-            subject: "Mate verification mail",
-            text: "Verification code : "+authNum
-          };
-          
-          await smtpTransport.sendMail(mailOptions, (error, responses) =>{
-              console.log(error,responses)
-              smtpTransport.close();
-          });
-          res.send(JSON.stringify({results:{isVerify:true}}))
-          
+        if(checkEmailduplication(email)){
+            res.send(JSON.stringify({results:{isVerify:false,fail:'Email duplication'}}))
+        }else{
+            await client.query("insert into email_verification values (default,$1, $2)",[email,authNum])
+            await client.query("COMMIT")
+        
+            console.log(process.env.GOOGLE_USER,process.env.GOOGLE_PASS)
+            const mailOptions = {
+                from: process.env.GOOGLE_USER,
+                to: email,
+                subject: "Mate verification mail",
+                text: "Verification code : "+authNum
+              };
+              
+              await smtpTransport.sendMail(mailOptions, (error, responses) =>{
+                  console.log(error,responses)
+                  smtpTransport.close();
+              });
+              res.send(JSON.stringify({results:{isVerify:true,fail:""}}))
+              
+        }
+        
     }else{  
-        res.send(JSON.stringify({results:{isVerify:false}}))
+        res.send(JSON.stringify({results:{isVerify:false,fail:"Unsupported email format"}}))
     }
     
         
