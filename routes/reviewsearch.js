@@ -401,10 +401,9 @@ router.post("/sendReport",async function(req,res){
     const post_type=req.body.post_type
     const decodeJson = JSON.parse(await tk.decodeToken(token))
     if(decodeJson.valid){
-        reportReceive(decodeJson.user_id,post_id,post_type,report_body);
-        res.send('success');
+        await reportReceive(decodeJson.user_id,post_id,post_type,report_body).then(res.send(JSON.stringify({results:{isSuccess:true}})));
     }else{
-        res.send('error')
+        res.send(JSON.stringify({results:{isSuccess:false}}))
     }
     
 })
