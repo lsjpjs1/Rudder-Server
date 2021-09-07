@@ -320,17 +320,11 @@ router.post('/googleLogin', async function(req,res){
 
 
 router.post('/loginJWT', async function(req,res){
-    const {user_id,user_password,notification_token} = req.body
-    var os
-    if(req.headers['user-agent']=='Android'){
-        os = 'android'
-    }else{
-        os = 'ios'
-    }
+    const {user_id,user_password,notification_token,os} = req.body
     if(await checkexist(user_id,user_password)==true){
         if(await checkpassword(user_id,user_password)==true){
 
-            if(typeof notification_token != "undefined"){
+            if(typeof notification_token != "undefined" && typeof os != "undefined"){
                 await updateNotificationToken(os,notification_token) // 알림 토큰 업데이트
             }
             
