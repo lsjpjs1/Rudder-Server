@@ -321,6 +321,7 @@ router.post('/googleLogin', async function(req,res){
 
 router.post('/loginJWT', async function(req,res){
     const {user_id,user_password,notification_token,os} = req.body
+    console.log(req.body)
     if(await checkexist(user_id,user_password)==true){
         if(await checkpassword(user_id,user_password)==true){
 
