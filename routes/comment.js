@@ -157,7 +157,7 @@ router.post("/editComment",async function(req,res){
         await editComment(comment_body,comment_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
         
     }else{
-        res.send('error')
+        res.send(JSON.stringify({results:{isSuccess:false}}))
     }
 })
 

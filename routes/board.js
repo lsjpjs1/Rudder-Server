@@ -341,7 +341,7 @@ router.post("/editPost",async function(req,res){
         var temp = jwt.verify(token,SECRET_KEY)
         await editPost(post_id,post_body).then(res.send(JSON.stringify({results:{isSuccess:true}})))
     }else{
-        res.send('error')
+        res.send(JSON.stringify({results:{isSuccess:true}}))
     }
 })
 
