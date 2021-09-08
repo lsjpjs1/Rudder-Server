@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config({path:'./.env'});
 const SECRET_KEY = process.env.JWT_SECRET
 const tk = require("./tokenhandle");
-
+const notification = require("./notification")
 const request = require('request')
 
 async function commentRender(post_id, user_id){
@@ -50,17 +50,26 @@ async function commentRender(post_id, user_id){
 async function addComment(user_id,post_id, comment_body,status,group_num){
     try{
         await client.query("BEGIN")
+        var queryResult
+        var os
+        var notification_token
         if(status=="parent"){
-            const groupNumResult = await client.query("select count(c.count) from (SELECT count(comment_id) from board_comment_new where post_id = $1 group by group_num) as c",[post_id])
-            await client.query("insert into board_comment_new values (default, $1, $2, $3, default, 0,$4,0,$5)",[post_id,user_id,comment_body,status,groupNumResult.rows[0].count])
+            queryResult = await client.query("select count(c.count), \
+            (select notification_token from user_info where user_id = (select user_id from board where post_id = $1 )), \
+            (select os from user_info where user_id = (select user_id from board where post_id = $1 )) from (SELECT count(comment_id) \
+            from board_comment_new where post_id = $1 group by group_num) as c",[post_id])
+            await client.query("insert into board_comment_new values (default, $1, $2, $3, default, 0,$4,0,$5)",[post_id,user_id,comment_body,status,queryResult.rows[0].count])
         }else{
-            const orderInGroupResult = await client.query("select count(c.count) from (SELECT count(comment_id) from board_comment_new where post_id = $1 and group_num = $2 group by order_in_group) as c",[post_id,group_num])
-            await client.query("insert into board_comment_new values (default, $1, $2, $3, default, 0,$4,$5,$6)",[post_id,user_id,comment_body,status,orderInGroupResult.rows[0].count,group_num])
+            queryResult = await client.query("select count(c.count) from (SELECT count(comment_id) from board_comment_new where post_id = $1 and group_num = $2 group by order_in_group) as c",[post_id,group_num])
+            await client.query("insert into board_comment_new values (default, $1, $2, $3, default, 0,$4,$5,$6)",[post_id,user_id,comment_body,status,queryResult.rows[0].count,group_num])
         }
+        os = queryResult.rows[0].os
+        notification_token = queryResult.rows[0].notification_token
+        await notification.notificationFromToken(os,notification_token) // undefined check는 notificationFromToken에서 함
         await client.query("update board set comment_count = comment_count+1 where post_id=($1)",[post_id])
         await client.query("COMMIT")
     }catch(ex){
-        console.log("Failed to execute addLike"+ex)
+        console.log("Failed to execute addComment"+ex)
         await client.query("ROLLBACK")
     }finally{
        // await client.end()
@@ -68,37 +77,6 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
     }
 }
 
-async function newCommentNotification(post_id){
-    try{
-        await client.query("BEGIN")
-        const result = await client.query("select notification_token from user_info where user_id = (select user_id from board where post_id = $1)",[post_id])
-        if(typeof result.rows[0].notification_token!='undefined'){
-            const options = {
-                uri:'https://fcm.googleapis.com/fcm/send', 
-                method: 'POST',
-                headers: {
-                    "content-type": "application/json",
-                    "Authorization": "key= "
-                },
-                json: {
-                    'to': result.rows[0].notification_token,
-                    'notification': {
-                       'title': '',
-                       'body': '잘 갔나요?'
-                       
-                    }
-                }
-              }
-            request.post(options, function(err,httpResponse,body){ /* ... */ })
-        }
-        
-    }catch(ex){
-        console.log("Failed to execute newCommentNotification"+ex)
-    }finally{
-       // await client.end()
-        console.log("Cleaned.") 
-    }
-}
 
 async function addLike(user_id,comment_id,plusValue=1){
     try{
@@ -190,7 +168,6 @@ router.post("/addComment",async function(req,res){
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
         await addComment(temp.user_id,post_id, comment_body,status,group_num).then(res.send(JSON.stringify({results:{isSuccess:true}})))
-        await newCommentNotification(post_id)
         
     }else{
         res.send(JSON.stringify({results:{isSuccess:false}}))

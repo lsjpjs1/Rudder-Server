@@ -96,6 +96,7 @@ async function checkEmailduplication(email){
     try{
         await client.query("BEGIN")
         const results=await client.query("select user_email from user_info where user_email = $1",[email])
+        console.log(email,results.rows.length)
         if(results.rows.length > 0){
             console.log("email duplication")
             return true;
@@ -119,7 +120,7 @@ console.log(email)
     let authNum = Math.random().toString().substr(2,6);
 
     if(checkemail(email)){
-        if(checkEmailduplication(email)){
+        if(await checkEmailduplication(email)){
             res.send(JSON.stringify({results:{isVerify:false,fail:'Email duplication'}}))
         }else{
             await client.query("insert into email_verification values (default,$1, $2)",[email,authNum])
