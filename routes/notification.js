@@ -10,7 +10,7 @@ module.exports.notificationFromToken = async function (os, notification_token) {
         if (os == 'ios') {
             var option = {
                 token: {
-                    key: 'ans_test.p8',
+                    key: '/ans_test.p8',
                     keyId: process.env.APN_KEY_ID,
                     teamId: process.env.APN_TEAM_ID
                 },
