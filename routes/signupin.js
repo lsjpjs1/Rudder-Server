@@ -297,7 +297,36 @@ async function updateNotificationToken(os,notification_code,user_id) {
     }finally{
         console.log("Cleaned.") 
     }
+} 
+
+async function profileImageList() { 
+    try{
+        await client.query("BEGIN")
+        
+        const results=await client.query("select * from user_profile_image")
+        var profileImageList = new Array()
+        for(var result of results.rows){
+            var profileImageInfo = new Object()
+            profileImageInfo = result
+            profileImageInfo.hdLink = process.env.CLOUDFRONT_URL + 'profile_image_hd/' + String(result._id) 
+            profileImageInfo.previewLink = process.env.CLOUDFRONT_URL + 'profile_image_preview/' + String(result._id) 
+            profileImageList.push(profileImageInfo)
+        }
+
+        return profileImageList
+    }catch(ex){
+        console.log("Failed to execute profileImageList"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+        console.log("Cleaned.") 
+    }
 }
+
+router.post("/profileImageList",async function(req,res){
+
+    const profileImages = await profileImageList()
+    res.send(JSON.stringify({results:{profileImageList:profileImages}}))
+});
 
 router.post("/validationToken",async function(req,res){
     const {token} = req.body
