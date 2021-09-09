@@ -41,11 +41,20 @@ async function addverify(user_info_id){
         console.log("Cleaned.") 
     }
 }
-function checkemail(email){//assume that Edin's email adress is like "s12345@edin.ac.uk"
-console.log(email)
-     var emailregex=/[^\s]+@naver.com|[^\s]+@waseda.jp|[^\s]+@korea.ac.kr/;
-     if(email=="woosung@friend.waseda.jp")return true;
-
+async function checkemail(email,school_id){//assume that Edin's email adress is like "s12345@edin.ac.uk"
+    var emailregex
+    if(typeof school_id == 'undefined'){
+        emailregex=/[^\s]+@naver.com|[^\s]+@waseda.jp|[^\s]+@korea.ac.kr/;
+    }
+    else{
+        await client.query("BEGIN")
+        const result=await client.query("select regex from university where school_id = $1",[school_id])
+        await client.query("COMMIT")
+        const emailRegexStr=await result.rows[0].regex
+        console.log(emailRegexStr)
+        emailregex=new RegExp(emailRegexStr)
+        
+    }
     console.log("the email is "+emailregex.test(email))
     return emailregex.test(email)
 }
@@ -115,11 +124,11 @@ async function checkEmailduplication(email){
 
 router.post("/verifyEmail",async function(req,res){
     console.log("verifyEmail is called")
-    const email=req.body.email;
+    const {email,school_id}=req.body
 console.log(email)
     let authNum = Math.random().toString().substr(2,6);
 
-    if(checkemail(email)){
+    if(await checkemail(email,school_id)){
         if(await checkEmailduplication(email)){
             res.send(JSON.stringify({results:{isVerify:false,fail:'Email duplication'}}))
         }else{
