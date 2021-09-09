@@ -133,6 +133,37 @@ router.post("/checkduplication",async function(req,res){
 
 });
 
+async function checkDuplicationNickname(nickname){
+    try{
+        await client.query("BEGIN")
+        const results=await client.query("select user_nickname from user_info where user_nickname = $1",[nickname])
+        if(results.rows.length > 0){
+            console.log("user_nickname duplication")
+            return true;
+        }else{
+            return false;
+        }
+    }catch(ex){
+        console.log("Failed to execute signin"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/checkDuplicationNickname",async function(req,res){
+
+    const nickname = req.body.nickname;
+    console.log(nickname)
+    const isDuplicated = await checkDuplicationNickname(nickname)
+    const result = JSON.stringify({results:{isDuplicated:isDuplicated}})
+    
+    res.send(result)
+
+
+});
+
 async function checkpassword(user_id, user_password){
     try{
         const encryptedPw = crypto.createHmac('sha1',secret).update(user_password).digest('base64')
