@@ -65,7 +65,7 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
         }
         os = queryResult.rows[0].os
         notification_token = queryResult.rows[0].notification_token
-        await notification.notificationFromToken(os,notification_token) // undefined check는 notificationFromToken에서 함
+        await notification.notificationFromToken(os,notification_token,comment_body) // undefined check는 notificationFromToken에서 함
         await client.query("update board set comment_count = comment_count+1 where post_id=($1)",[post_id])
         await client.query("COMMIT")
     }catch(ex){
