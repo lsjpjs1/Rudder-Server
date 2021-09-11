@@ -21,24 +21,25 @@ const REGION = "ap-northeast-2"; //e.g. "us-east-1"
 // Create an Amazon S3 service client object..
 const s3Client = new S3Client({ region: REGION,credentials:{accessKeyId:process.env.S3_ACCESS_KEY_ID,secretAccessKey:process.env.S3_SECRET_ACCESS_KEY} });
 
-const apn = require('apn')
+const apn = require('apn');
+const { profile } = require('console');
 
 
 async function renderPost(board_type,endPostId,category_id=-1,user_id,school_id){
     try{
         await client.query("BEGIN");
         
-        var baseQuery = "SELECT b.*,ui.user_nickname,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
+        var baseQuery = "SELECT b.*,ui.user_nickname,ui.user_profile_image_id,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
         (select left_join_res.* from \
             (select b.*,bl.user_id as like_user_id from \
                 board as b left join \
                 (select * from board_like where user_id=$1) as bl \
                 on b.post_id = bl.post_id order by b.post_id) as left_join_res) as b \
-                left join user_info as ui on b.user_id = ui.user_id \
+                left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on b.user_id = ui.user_id \
                 left join board_type as bt on b.board_type_id = bt.board_type_id \
                 left join category as c on b.category_id = c.category_id \
                 left join board_image as b_image on b.post_id = b_image.post_id \
-                group by b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit \
+                group by ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit \
                 having bt.board_type_name = $2 and b.is_delete = false "
         if(endPostId == -1){
             if(category_id==-1){
@@ -94,6 +95,11 @@ async function renderPost(board_type,endPostId,category_id=-1,user_id,school_id)
             data.isMine=false
             if(results.rows[i].user_id==user_id){
                 data.isMine=true
+            }
+
+            data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
+            if (typeof results.rows[0].user_profile_image_id != 'undefined'){
+                data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[0].user_profile_image_id
             }
 
             post.push(data)
