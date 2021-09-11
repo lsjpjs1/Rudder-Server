@@ -322,6 +322,30 @@ async function profileImageList() {
     }
 }
 
+async function getNotice(os,version) { 
+    try{
+        await client.query("BEGIN")
+        const IOS_VERSION = ""
+        const ANDROID_VERSION = ""
+        const NOTICE_BODY = "something"
+        const IS_EXIST = true
+        return {isExist:IS_EXIST,notice:NOTICE_BODY}
+    }catch(ex){
+        console.log("Failed to execute getNotice"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/getNotice",async function(req,res){
+
+    const {os,version} = req.body
+    const result = await getNotice(os,version)
+
+    res.send(JSON.stringify({results:result}))
+});
+
 router.post("/profileImageList",async function(req,res){
 
     const profileImages = await profileImageList()
