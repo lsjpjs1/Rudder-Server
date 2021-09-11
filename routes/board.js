@@ -98,7 +98,7 @@ async function renderPost(board_type,endPostId,category_id=-1,user_id,school_id)
             }
 
             data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
-            if (typeof results.rows[0].user_profile_image_id != 'undefined'){
+            if (results.rows[0].user_profile_image_id != null){
                 data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[0].user_profile_image_id
             }
 
