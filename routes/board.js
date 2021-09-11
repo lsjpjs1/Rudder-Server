@@ -25,10 +25,10 @@ const apn = require('apn');
 const { profile } = require('console');
 
 
-async function renderPost(board_type,endPostId,category_id=-1,user_id,school_id){
+async function renderPost(board_type,endPostId,category_id=-1,user_id,school_id,searchBody=""){
     try{
         await client.query("BEGIN");
-        
+        var searchStr = "'%"+searchBody+"%'"
         var baseQuery = "SELECT b.*,ui.user_nickname,ui.user_profile_image_id,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
         (select left_join_res.* from \
             (select b.*,bl.user_id as like_user_id from \
@@ -570,12 +570,12 @@ router.post("/deletePost",async function(req,res){
 router.post("/renderPost",async function(req,res){
     console.log("renderPost is called")
     
-    const {board_type,endPostId,category_id,token} = req.body; 
+    const {board_type,endPostId,category_id,token,searchBody} = req.body; 
     console.log(req.body)
     
     if(tk.decodeToken(token)){
         const tmp = jwt.verify(token,SECRET_KEY)
-        var jsonData= await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id);
+        var jsonData= await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody);
         res.send(jsonData);
     }
     

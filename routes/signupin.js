@@ -338,6 +338,33 @@ async function getNotice(os,version) {
     }
 }
 
+async function profileImageUrl(user_info_id) { 
+    try{
+        await client.query("BEGIN")
+        
+        const results=await client.query("select user_profile_image_id from user_info as ui left join user_profile as up on ui.profile_id = up.profile_id where user_info_id = $1",[user_info_id])
+    
+        if (results.rows[0].user_profile_image_id==null){
+            return process.env.CLOUDFRONT_URL+'profile_image_preview/1'
+        }else{
+            return process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[0].user_profile_image_id
+        }
+
+    }catch(ex){
+        console.log("Failed to execute profileImageList"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/profileImageUrl",async function(req,res){
+    const {token} = req.body
+    const tmp = jwt.verify(token,SECRET_KEY)
+    const url = await profileImageUrl(tmp.user_info_id)
+    res.send(JSON.stringify({results:{url:url}}))
+});
+
 router.post("/getNotice",async function(req,res){
 
     const {os,version} = req.body
