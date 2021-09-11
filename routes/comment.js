@@ -13,7 +13,10 @@ const request = require('request')
 async function commentRender(post_id, user_id){
     try{
         await client.query("BEGIN")
-        const results = await client.query("select left_join_res.*,bcl.user_id as like_user_id from (SELECT bcn.*,ui.user_nickname from board_comment_new as bcn left join user_info as ui on bcn.user_id = ui.user_id where post_id = $1) as left_join_res left join (select * from board_comment_like where user_id = $2) as bcl on left_join_res.comment_id = bcl.comment_id where is_delete=false order by group_num,order_in_group",[post_id,user_id])
+        const results = await client.query("select left_join_res.*,bcl.user_id as like_user_id from \
+        (SELECT bcn.*,ui.user_nickname,ui.user_profile_image_id from board_comment_new as bcn left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on bcn.user_id = ui.user_id where post_id = $1) as left_join_res \
+        left join (select * from board_comment_like where user_id = $2) as bcl on left_join_res.comment_id = bcl.comment_id \
+        where is_delete=false order by group_num,order_in_group",[post_id,user_id])
         var comments = new Array()
         for(var i=0;i<results.rows.length;i++){
             var currentComment  = new Object()
@@ -35,6 +38,12 @@ async function commentRender(post_id, user_id){
             if(user_id==results.rows[i].user_id)currentComment.isMine=true
             currentComment.isLiked=false
             if(user_id==results.rows[i].like_user_id)currentComment.isLiked=true
+
+            currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
+            if (results.rows[0].user_profile_image_id != null){
+                currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[0].user_profile_image_id
+            }
+
             comments.push(currentComment)
         }
         return comments;
