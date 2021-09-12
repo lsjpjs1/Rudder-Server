@@ -98,8 +98,8 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
             }
 
             data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
-            if (results.rows[0].user_profile_image_id != null){
-                data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[0].user_profile_image_id
+            if (results.rows[i].user_profile_image_id != null){
+                data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[i].user_profile_image_id
             }
 
             post.push(data)
