@@ -25,10 +25,10 @@ const apn = require('apn');
 const { profile } = require('console');
 
 
-async function renderPost(board_type,endPostId,category_id=-1,user_id,school_id,searchBody=""){
+async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id,school_id,searchBody=""){
     try{
         await client.query("BEGIN");
-        var searchStr = "'%"+searchBody+"%'"
+        var searchStr = " '%"+searchBody+"%' "
         var baseQuery = "SELECT b.*,ui.user_nickname,ui.user_profile_image_id,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
         (select left_join_res.* from \
             (select b.*,bl.user_id as like_user_id from \
@@ -40,22 +40,22 @@ async function renderPost(board_type,endPostId,category_id=-1,user_id,school_id,
                 left join category as c on b.category_id = c.category_id \
                 left join board_image as b_image on b.post_id = b_image.post_id \
                 group by ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit \
-                having bt.board_type_name = $2 and b.is_delete = false "
+                having bt.board_type_name = $2 and b.is_delete = false and b.post_body like "+searchStr
         if(endPostId == -1){
             if(category_id==-1){
-                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$4 order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id])
             }else{
-                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and category_id=$4 and school_id=$5 order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and category_id=$4 and school_id=$5 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$5 and b.category_id=$4 order by post_id desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,category_id,school_id])
             }
             
         }else{
             if(category_id==-1){
-                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 and post_body like "+searchStr+" order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$5 and b.post_id < $3 order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE,school_id])
             }else{
-                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and category_id=$4 and school_id=$6 order by post_id desc limit $5  ) as not_delete order by post_id asc limit 1) \
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and category_id=$4 and school_id=$6 and post_body like "+searchStr+" order by post_id desc limit $5  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$6 and b.post_id < $3 and b.category_id=$4 order by post_id desc",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE,school_id])
             }
             
@@ -453,9 +453,14 @@ async function getUploadSignedUrls(contentTypes,user_info_id,post_id){
 }
 
 
-async function userSelectCategoryList(user_info_id){
+async function userSelectCategoryList(user_info_id,school_id){
     try{
-        const results = await client.query("select * from category where category_id in (select category_id from user_select_category where user_info_id = $1) order by category_id ",[user_info_id])
+        const results = await client.query(" \
+        select * from user_select_category usc left join category cc on usc.category_id = cc.category_id where \
+        case \
+            when (select category_id from user_select_category where user_info_id = $1 limit 1) is null then school_id = $2 \
+            else usc.user_info_id = $1 \
+        end",[user_info_id,school_id])
         var categoryList = new Array()
         for(result of results.rows){
             var category = new Object()
@@ -475,16 +480,18 @@ async function userSelectCategoryList(user_info_id){
 
 
 
-async function addUserSelectCategory(user_info_id,categoryIdList){
+async function updateUserSelectCategory(user_info_id,categoryIdList){
     try{
         await client.query("BEGIN")
+        await client.query("delete from user_select_category where user_info_id = $1",[user_info_id])
         for(category_id of categoryIdList){
+            
             await client.query("insert into user_select_category values \
             (default,$1,$2)",[user_info_id,category_id])
         }
         await client.query("COMMIT")
     }catch(ex){
-        console.log("Failed to execute addUserSelectCategory"+ex)
+        console.log("Failed to execute updateUserSelectCategory"+ex)
         await client.query("ROLLBACK")
     }finally{
        // await client.end()
@@ -523,19 +530,25 @@ router.post("/userSelectCategoryList",async function(req,res){
     const {token} = req.body
     if(tk.decodeToken){
         const tmp = jwt.verify(token,SECRET_KEY)
-        const categories = await userSelectCategoryList(tmp.user_info_id)
+        const categories = await userSelectCategoryList(tmp.user_info_id,tmp.school_id)
         res.send(JSON.stringify({results:categories}))
     }
     
 })
 
-router.post("/addUserSelectCategory",async function(req,res){
-    const {token,categoryIdList} = req.body
+router.post("/updateUserSelectCategory",async function(req,res){
+    const {token,categoryIdList,user_id} = req.body
     console.log(categoryIdList)
-    if(tk.decodeToken(token)){
-        const tmp = jwt.verify(token,SECRET_KEY)
-        await addUserSelectCategory(tmp.user_info_id,categoryIdList).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+    if (typeof token =='undefined'){
+        const result = await client.query("select * from user_info where user_id=$1",[user_id])
+        await updateUserSelectCategory(result.rows[0].user_info_id,categoryIdList).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+    }else{
+        if(tk.decodeToken(token)){
+            const tmp = jwt.verify(token,SECRET_KEY)
+            await updateUserSelectCategory(tmp.user_info_id,categoryIdList).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+        }
     }
+    
     
     
 })
@@ -567,6 +580,7 @@ router.post("/deletePost",async function(req,res){
     
 })
 
+
 router.post("/renderPost",async function(req,res){
     console.log("renderPost is called")
     
@@ -575,7 +589,8 @@ router.post("/renderPost",async function(req,res){
     
     if(tk.decodeToken(token)){
         const tmp = jwt.verify(token,SECRET_KEY)
-        var jsonData= await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody);
+        var jsonData = await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody);
+        
         res.send(jsonData);
     }
     
