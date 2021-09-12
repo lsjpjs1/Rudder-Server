@@ -11,7 +11,7 @@ module.exports.notificationFromToken = async function (os, notification_token,bo
         if (os == 'ios') {
             var option = {
                 token: {
-                    key: __dirname+'/ans_test.p8',
+                    key: __dirname+process.env.ANS_KEY_FILE_PATH,
                     keyId: process.env.APN_KEY_ID,
                     teamId: process.env.APN_TEAM_ID
                 },
