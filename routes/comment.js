@@ -14,7 +14,7 @@ async function commentRender(post_id, user_id){
     try{
         await client.query("BEGIN")
         const results = await client.query("select left_join_res.*,bcl.user_id as like_user_id from \
-        (SELECT bcn.*,ui.user_nickname,ui.user_profile_image_id from board_comment_new as bcn left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on bcn.user_id = ui.user_id where post_id = $1) as left_join_res \
+        (SELECT bcn.*,ui.user_nickname,ui.user_profile_image_id from board_comment as bcn left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on bcn.user_id = ui.user_id where post_id = $1) as left_join_res \
         left join (select * from board_comment_like where user_id = $2) as bcl on left_join_res.comment_id = bcl.comment_id \
         where is_delete=false order by group_num,order_in_group",[post_id,user_id])
         var comments = new Array()
@@ -66,11 +66,11 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
             queryResult = await client.query("select count(c.count), \
             (select notification_token from user_info where user_id = (select user_id from board where post_id = $1 )), \
             (select os from user_info where user_id = (select user_id from board where post_id = $1 )) from (SELECT count(comment_id) \
-            from board_comment_new where post_id = $1 group by group_num) as c",[post_id])
-            await client.query("insert into board_comment_new values (default, $1, $2, $3, default, 0,$4,0,$5)",[post_id,user_id,comment_body,status,queryResult.rows[0].count])
+            from board_comment where post_id = $1 group by group_num) as c",[post_id])
+            await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,0,$5)",[post_id,user_id,comment_body,status,queryResult.rows[0].count])
         }else{
-            queryResult = await client.query("select count(c.count) from (SELECT count(comment_id) from board_comment_new where post_id = $1 and group_num = $2 group by order_in_group) as c",[post_id,group_num])
-            await client.query("insert into board_comment_new values (default, $1, $2, $3, default, 0,$4,$5,$6)",[post_id,user_id,comment_body,status,queryResult.rows[0].count,group_num])
+            queryResult = await client.query("select count(c.count) from (SELECT count(comment_id) from board_comment where post_id = $1 and group_num = $2 group by order_in_group) as c",[post_id,group_num])
+            await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,$5,$6)",[post_id,user_id,comment_body,status,queryResult.rows[0].count,group_num])
         }
         os = queryResult.rows[0].os
         notification_token = queryResult.rows[0].notification_token
@@ -95,9 +95,9 @@ async function addLike(user_id,comment_id,plusValue=1){
         }else{
             await client.query("delete from board_comment_like where comment_id=$1 and user_id=$2",[comment_id,user_id])
         }
-        await client.query("update board_comment_new set like_count = like_count+$1 where comment_id=($2)",[plusValue,comment_id])
+        await client.query("update board_comment set like_count = like_count+$1 where comment_id=($2)",[plusValue,comment_id])
         await client.query("COMMIT")
-        const likeCountResult = await client.query("select like_count from board_comment_new where comment_id=$1",[comment_id])
+        const likeCountResult = await client.query("select like_count from board_comment where comment_id=$1",[comment_id])
         return likeCountResult.rows[0].like_count
     }catch(ex){
         console.log("Failed to execute addLikeComment"+ex)
@@ -111,7 +111,7 @@ async function addLike(user_id,comment_id,plusValue=1){
 async function deleteComment(comment_id, post_id){
     try{
         await client.query("BEGIN")
-        await client.query("update board_comment_new set is_delete=true where comment_id = $1",[comment_id])
+        await client.query("update board_comment set is_delete=true where comment_id = $1",[comment_id])
         await client.query("update board set comment_count = comment_count-1 where post_id=($1)",[post_id])
         await client.query("COMMIT")
     }catch(ex){
@@ -126,7 +126,7 @@ async function deleteComment(comment_id, post_id){
 async function editComment(comment_body,comment_id){
     try{
         await client.query("BEGIN")
-        await client.query("update board_comment_new set comment_body=$1,is_edit=true where comment_id=$2",[comment_body,comment_id])
+        await client.query("update board_comment set comment_body=$1,is_edit=true where comment_id=$2",[comment_body,comment_id])
         await client.query("COMMIT")
     }catch(ex){
         console.log("Failed to execute editComment"+ex)
