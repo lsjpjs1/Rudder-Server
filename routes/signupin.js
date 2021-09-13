@@ -327,7 +327,7 @@ async function getNotice(os,version) {
         await client.query("BEGIN")
         const IOS_VERSION = ""
         const ANDROID_VERSION = ""
-        const NOTICE_BODY = "something"
+        const NOTICE_BODY = "Welcome to Rudder"
         const IS_EXIST = true
         return {isExist:IS_EXIST,notice:NOTICE_BODY}
     }catch(ex){
