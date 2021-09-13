@@ -39,10 +39,12 @@ async function commentRender(post_id, user_id){
             currentComment.isLiked=false
             if(user_id==results.rows[i].like_user_id)currentComment.isLiked=true
 
+            
             currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
-            if (results.rows[0].user_profile_image_id != null){
-                currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[0].user_profile_image_id
+            if (results.rows[i].user_profile_image_id != null){
+                currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[i].user_profile_image_id
             }
+
 
             comments.push(currentComment)
         }
