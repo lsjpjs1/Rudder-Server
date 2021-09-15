@@ -70,6 +70,9 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
                 data.user_id = results.rows[i].user_id.substr(0,1)+'******'
             }else{
                 data.user_id = results.rows[i].user_nickname.substr(0,1)+'******'
+                if (results.rows[i].user_nickname == "Rudder"){
+                    data.user_id == "Rudder"
+                }
             }
             
             data.post_body = results.rows[i].post_body

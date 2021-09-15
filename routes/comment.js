@@ -23,7 +23,9 @@ async function commentRender(post_id, user_id){
             if(results.rows[i].user_nickname==null){
                 currentComment.user_id = results.rows[i].user_id.substr(0,1)+'******'
             }else{
+               
                 currentComment.user_id = results.rows[i].user_nickname.substr(0,1)+'******'
+                if (results.rows[i].user_nickname == "Rudder") currentComment.user_id = "Rudder"
             }
             currentComment.comment_id = results.rows[i].comment_id
             currentComment.comment_body = results.rows[i].comment_body
@@ -71,7 +73,8 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
             from board_comment where post_id = $1 group by group_num) as c",[post_id])
             await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,0,$5)",[post_id,user_id,comment_body,status,queryResult.rows[0].count])
         }else{
-            queryResult = await client.query("select count(c.count) from (SELECT count(comment_id) from board_comment where post_id = $1 and group_num = $2 group by order_in_group) as c",[post_id,group_num])
+            queryResult = await client.query("select count(c.count), \
+            from (SELECT count(comment_id) from board_comment where post_id = $1 and group_num = $2 group by order_in_group) as c",[post_id,group_num])
             await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,$5,$6)",[post_id,user_id,comment_body,status,queryResult.rows[0].count,group_num])
         }
         os = queryResult.rows[0].os
