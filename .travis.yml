@@ -24,14 +24,14 @@ deploy:
     local_dir: deploy
     skip_cleanup: true
     wait_until_deploy: true
-    access_key_id: $AWS_ACCESS_KEY
-    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    access_key_id: $AWS_ACCESS_KEY_S3
+    secret_access_key: $AWS_SECRET_ACCESS_KEY_S3
     on:
       branch: master
     
   - provider: codedeploy
-    access_key_id: $AWS_ACCESS_KEY
-    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    access_key_id: $AWS_ACCESS_KEY_CODE_DEPLOY
+    secret_access_key: $AWS_SECRET_ACCESS_KEY_CODE_DEPLOY
     bucket: rudder-docker
     key: rudder-server.zip
     bundle_type: zip
