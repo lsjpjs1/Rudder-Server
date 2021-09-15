@@ -108,6 +108,8 @@ router.post("/",async function(req,res){
 
 async function checkEmailduplication(email){
     try{
+        if(email==process.env.MAGIC_EMAIL)return false //매직
+
         await client.query("BEGIN")
         const results=await client.query("select user_email from user_info where user_email = $1",[email])
         console.log(email,results.rows.length)
