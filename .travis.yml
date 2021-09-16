@@ -11,7 +11,7 @@ before_install:
 after_success:
   
 
-  
+
 before_deploy:
   - zip -r rudder-server .
   - mkdir -p deploy
@@ -42,7 +42,6 @@ deploy:
     wait_until_deployed : true
     on:
       branch: $BRANCH_NAME
-
 
 notificaitons:
   email:
