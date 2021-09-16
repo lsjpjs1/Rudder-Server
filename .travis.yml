@@ -19,7 +19,7 @@ before_deploy:
 
 deploy:
   - provider: s3
-    bucket: rudder-docker
+    bucket: $AWS_S3_BUCKET_NAME
     region: $AWS_LIGHT_SAIL_REGION
     local_dir: deploy
     skip_cleanup: true
@@ -27,12 +27,12 @@ deploy:
     access_key_id: $AWS_ACCESS_KEY_S3
     secret_access_key: $AWS_SECRET_ACCESS_KEY_S3
     on:
-      branch: master
+      branch: $BRANCH_NAME
     
   - provider: codedeploy
     access_key_id: $AWS_ACCESS_KEY_CODE_DEPLOY
     secret_access_key: $AWS_SECRET_ACCESS_KEY_CODE_DEPLOY
-    bucket: rudder-docker
+    bucket: $AWS_S3_BUCKET_NAME
     key: rudder-server.zip
     bundle_type: zip
     application: rudder-codedeploy-app
@@ -40,7 +40,7 @@ deploy:
     region: $AWS_LIGHT_SAIL_REGION
     wait_until_deployed : true
     on:
-      branch: master
+      branch: $BRANCH_NAME
 
 
 notificaitons:
