@@ -30,6 +30,7 @@ deploy:
     on:
       branch: $BRANCH_NAME
     
+      
   - provider: codedeploy
     access_key_id: $AWS_ACCESS_KEY_CODE_DEPLOY
     secret_access_key: $AWS_SECRET_ACCESS_KEY_CODE_DEPLOY
