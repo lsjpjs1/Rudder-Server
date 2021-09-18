@@ -5,7 +5,7 @@ files:
     destination: /home/rudder-docker
   
 permissions:
-  - object: /
+  - object: /home/rudder-docker
     pattern: "**"
     owner: bitnami
     group: bitnami
