@@ -29,7 +29,7 @@ router.post("/categoryList",async function(req,res){
     var {school_id,token} = req.body
     console.log('schoolid',req.body.school_id)
     console.log('token',req.body.token)
-    if(typeof token != 'undefined' || token !=null){
+    if(typeof token != 'undefined' && token !=null){
         const tmp = jwt.verify(token,SECRET_KEY)
         school_id=tmp.school_id
     }
