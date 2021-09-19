@@ -28,7 +28,7 @@ const { profile } = require('console');
 router.post("/categoryList",async function(req,res){
     var {school_id,token} = req.body
     console.log(req.body)
-    if(typeof token != 'undefined'){
+    if(typeof token != 'undefined' || token !=null){
         const tmp = jwt.verify(token,SECRET_KEY)
         school_id=tmp.school_id
     }
