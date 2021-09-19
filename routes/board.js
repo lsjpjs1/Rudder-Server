@@ -27,7 +27,8 @@ const { profile } = require('console');
 
 router.post("/categoryList",async function(req,res){
     var {school_id,token} = req.body
-    console.log(req.body)
+    console.log('schoolid',req.body.school_id)
+    console.log('token',req.body.token)
     if(typeof token != 'undefined' || token !=null){
         const tmp = jwt.verify(token,SECRET_KEY)
         school_id=tmp.school_id
@@ -45,7 +46,7 @@ async function categoryList(school_id=1){
             category = result
             categoryList.push(category)
         }
-        return categoryList
+        return tescategoryList
     }catch(ex){
         console.log("Failed to execute categoryList"+ex)
         await client.query("ROLLBACK")
