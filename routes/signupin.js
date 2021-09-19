@@ -326,9 +326,16 @@ async function getNotice(os,version) {
     try{
         await client.query("BEGIN")
         const IOS_VERSION = ""
-        const ANDROID_VERSION = ""
-        const NOTICE_BODY = "You are meeting an early stage of Rudder. Our community will get better with your opinions through “Contact Us”"
+        const ANDROID_VERSION = "2.0.1"
+        var UPDATE_BODY = 'Please Update the App!'
+        var NOTICE_BODY = "You are meeting an early stage of Rudder. Our community will get better with your opinions through “Contact Us”"
         const IS_EXIST = true
+        if(os=='android'&&version!=ANDROID_VERSION){
+            NOTICE_BODY=UPDATE_BODY
+        }
+        if(os=='ios'&&version=='3.0'){
+            NOTICE_BODY=UPDATE_BODY
+        }
         return {isExist:IS_EXIST,notice:NOTICE_BODY}
     }catch(ex){
         console.log("Failed to execute getNotice"+ex)

@@ -25,6 +25,46 @@ const apn = require('apn');
 const { profile } = require('console');
 
 
+router.post("/categoryList",async function(req,res){
+    const categories = await categoryList()
+    res.send(JSON.stringify({results:categories}))
+})
+
+async function categoryList(){
+    try{
+        const results = await client.query("select * from category order by category_id")
+        var categoryList = new Array()
+        for(result of results.rows){
+            var category = new Object()
+            category = result
+            categoryList.push(category)
+        }
+        return categoryList
+    }catch(ex){
+        console.log("Failed to execute categoryList"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+
+router.post("/renderPost",async function(req,res){
+    console.log("renderPost is called")
+    
+    const {board_type,endPostId,category_id,token,searchBody} = req.body; 
+    console.log(req.body)
+    
+    if(tk.decodeToken(token)){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        var jsonData = await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody);
+        
+        res.send(jsonData);
+    }
+    
+})
+
 async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id,school_id,searchBody=""){
     try{
         await client.query("BEGIN");
@@ -117,6 +157,139 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
         console.log("Cleaned.") 
     }
 }
+
+// router.post("/categoryList",async function(req,res){
+//     const categories = await categoryList()
+//     res.send(JSON.stringify({results:categories}))
+// })
+
+// async function categoryList(){
+//     try{
+//         const results = await client.query("select * from category order by category_id")
+//         var categoryList = new Array()
+//         for(result of results.rows){
+//             var category = new Object()
+//             category = result
+//             categoryList.push(category)
+//         }
+//         return categoryList
+//     }catch(ex){
+//         console.log("Failed to execute categoryList"+ex)
+//         await client.query("ROLLBACK")
+//     }finally{
+//        // await client.end()
+//         console.log("Cleaned.") 
+//     }
+// }
+
+
+// router.post("/renderPost",async function(req,res){
+//     console.log("renderPost is called")
+    
+//     const {board_type,endPostId,category_id,token,searchBody} = req.body; 
+//     console.log(req.body)
+    
+//     if(tk.decodeToken(token)){
+//         const tmp = jwt.verify(token,SECRET_KEY)
+//         var jsonData = await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody);
+        
+//         res.send(jsonData);
+//     }
+    
+// })
+
+// async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id,school_id,searchBody=""){
+//     try{
+//         await client.query("BEGIN");
+//         var searchStr = " '%"+searchBody+"%' "
+//         var baseQuery = "SELECT b.*,ui.user_nickname,ui.user_profile_image_id,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
+//         (select left_join_res.* from \
+//             (select b.*,bl.user_id as like_user_id from \
+//                 board as b left join \
+//                 (select * from board_like where user_id=$1) as bl \
+//                 on b.post_id = bl.post_id order by b.post_id) as left_join_res) as b \
+//                 left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on b.user_id = ui.user_id \
+//                 left join board_type as bt on b.board_type_id = bt.board_type_id \
+//                 left join category as c on b.category_id = c.category_id \
+//                 left join board_image as b_image on b.post_id = b_image.post_id \
+//                 group by ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit \
+//                 having bt.board_type_name = $2 and b.is_delete = false and b.post_body like "+searchStr
+//         if(endPostId == -1){
+//             if(category_id==-1){
+//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
+//                 and b.school_id=$4 order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id])
+//             }else{
+//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and category_id=$4 and school_id=$5 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
+//                 and b.school_id=$5 and b.category_id=$4 order by post_id desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,category_id,school_id])
+//             }
+            
+//         }else{
+//             if(category_id==-1){
+//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 and post_body like "+searchStr+" order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
+//                 and b.school_id=$5 and b.post_id < $3 order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE,school_id])
+//             }else{
+//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and category_id=$4 and school_id=$6 and post_body like "+searchStr+" order by post_id desc limit $5  ) as not_delete order by post_id asc limit 1) \
+//                 and b.school_id=$6 and b.post_id < $3 and b.category_id=$4 order by post_id desc",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE,school_id])
+//             }
+            
+//         }
+        
+
+//         var post = new Array()
+//         for(i=0;i<results.rows.length;i++){
+//             var data = new Object()
+//             data.post_id = results.rows[i].post_id
+//             if(results.rows[i].user_nickname==null){
+//                 data.user_id = results.rows[i].user_id.substr(0,1)+'******'
+//             }else{
+//                 data.user_id = results.rows[i].user_nickname.substr(0,1)+'******'
+//                 if (results.rows[i].user_nickname == "Rudder"){
+//                     data.user_id == "Rudder"
+//                 }
+//             }
+            
+//             data.post_body = results.rows[i].post_body
+//             data.post_title = results.rows[i].post_title
+//             data.post_time = results.rows[i].post_time
+//             data.comment_count = results.rows[i].comment_count
+//             data.like_count = results.rows[i].like_count
+//             data.post_view = results.rows[i].post_view
+//             data.category_id = results.rows[i].category_id
+//             data.category_name = results.rows[i].category_name
+//             data.is_delete = results.rows[i].is_delete
+//             data.imageUrls = new Array()
+//             if(results.rows[i].image_names!=null){
+//                 for(image_name of results.rows[i].image_names.split(',')){
+//                     data.imageUrls.push(process.env.CLOUDFRONT_URL+image_name)
+//                 }
+//             }   
+//             if(results.rows[i].like_user_id==null){
+//                 data.isLiked = false
+//             }else{
+//                 data.isLiked = true
+//             }
+//             data.isMine=false
+//             if(results.rows[i].user_id==user_id){
+//                 data.isMine=true
+//             }
+
+//             data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
+//             if (results.rows[i].user_profile_image_id != null){
+//                 data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[i].user_profile_image_id
+//             }
+
+//             post.push(data)
+//         }
+//         var jsonData = JSON.stringify(post)
+//         return jsonData;
+//     }catch(ex){
+//         console.log("Failed to execute board"+ex)
+//         await client.query("ROLLBACK")
+//     }finally{
+//        // await client.end()
+//         console.log("Cleaned.") 
+//     }
+// }
 
 async function addPost(board_type,post_title,post_body,user_id,imageInfoList=[],videoIdList,school_id,category_id=-1){
     try{
@@ -377,24 +550,7 @@ function getVideoIdList(post_body){
     }
 }
 
-async function categoryList(){
-    try{
-        const results = await client.query("select * from category order by category_id")
-        var categoryList = new Array()
-        for(result of results.rows){
-            var category = new Object()
-            category = result
-            categoryList.push(category)
-        }
-        return categoryList
-    }catch(ex){
-        console.log("Failed to execute categoryList"+ex)
-        await client.query("ROLLBACK")
-    }finally{
-       // await client.end()
-        console.log("Cleaned.") 
-    }
-}
+
 
 async function addPostViewCount(post_id){
     try{
@@ -569,10 +725,7 @@ router.post("/getUploadSignedUrls",async function(req,res){
 })
 
 
-router.post("/categoryList",async function(req,res){
-    const categories = await categoryList()
-    res.send(JSON.stringify({results:categories}))
-})
+
 
 
 
@@ -584,20 +737,7 @@ router.post("/deletePost",async function(req,res){
 })
 
 
-router.post("/renderPost",async function(req,res){
-    console.log("renderPost is called")
-    
-    const {board_type,endPostId,category_id,token,searchBody} = req.body; 
-    console.log(req.body)
-    
-    if(tk.decodeToken(token)){
-        const tmp = jwt.verify(token,SECRET_KEY)
-        var jsonData = await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody);
-        
-        res.send(jsonData);
-    }
-    
-})
+
 
 router.post("/addPost",async function(req,res){
     console.log("addPost is called")
