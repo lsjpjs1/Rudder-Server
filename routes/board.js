@@ -26,13 +26,18 @@ const { profile } = require('console');
 
 
 router.post("/categoryList",async function(req,res){
-    const categories = await categoryList()
+    var {school_id,token} = req.body
+    if(typeof token != 'undefined'){
+        const tmp = jwt.verify(token)
+        school_id=tmp.school_id
+    }
+    const categories = await categoryList(school_id)
     res.send(JSON.stringify({results:categories}))
 })
 
-async function categoryList(){
+async function categoryList(school_id=1){
     try{
-        const results = await client.query("select * from category order by category_id")
+        const results = await client.query("select * from category where school_id = $1 order by category_id",[school_id])
         var categoryList = new Array()
         for(result of results.rows){
             var category = new Object()
