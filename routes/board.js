@@ -28,7 +28,7 @@ const { profile } = require('console');
 router.post("/categoryList",async function(req,res){
     var {school_id,token} = req.body
     if(typeof token != 'undefined'){
-        const tmp = jwt.verify(token)
+        const tmp = jwt.verify(token,SECRET_KEY)
         school_id=tmp.school_id
     }
     const categories = await categoryList(school_id)
