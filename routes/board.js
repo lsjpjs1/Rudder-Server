@@ -26,13 +26,22 @@ const { profile } = require('console');
 
 
 router.post("/categoryList",async function(req,res){
-    const categories = await categoryList()
+    var {school_id,token} = req.body
+    console.log('schoolid',req.body.school_id)
+    console.log('token',req.body.token)
+    if(typeof token != 'undefined'){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        school_id=tmp.school_id
+    }
+    const categories = await categoryList(school_id)
     res.send(JSON.stringify({results:categories}))
 })
 
-async function categoryList(){
+async function categoryList(school_id=1){
     try{
-        const results = await client.query("select * from category order by category_id")
+        const results = await client.query("select * from category where school_id = $1 \
+        and school_id !=2 \
+        order by category_id",[school_id]) //ucl 카테고리 안보내줌 수정 예정 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         var categoryList = new Array()
         for(result of results.rows){
             var category = new Object()
