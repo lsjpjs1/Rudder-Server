@@ -130,12 +130,10 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
             data.comment_count = results.rows[i].comment_count
             data.like_count = results.rows[i].like_count
             data.post_view = results.rows[i].post_view
-            if(results.rows[i].category_id==null){  // 삭제예정!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            data.category_id = results.rows[i].category_id
+            if (data.category_id == null || typeof data.category_id=='undefined'){
                 data.category_id = 1
-            }else{
-                data.category_id = results.rows[i].category_id
             }
-            
             data.category_name = results.rows[i].category_name
             data.is_delete = results.rows[i].is_delete
             data.imageUrls = new Array()
