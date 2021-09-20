@@ -135,6 +135,9 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
                 data.category_id = 1
             }
             data.category_name = results.rows[i].category_name
+            if (data.category_name == null || typeof data.category_name=='undefined'){
+                data.category_name = "Random"
+            }
             data.is_delete = results.rows[i].is_delete
             data.imageUrls = new Array()
             if(results.rows[i].image_names!=null){
