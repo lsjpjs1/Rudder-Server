@@ -39,7 +39,9 @@ router.post("/categoryList",async function(req,res){
 
 async function categoryList(school_id=1){
     try{
-        const results = await client.query("select * from category where school_id = $1 order by category_id",[school_id])
+        const results = await client.query("select * from category where school_id = $1 \
+        and school_id !=2 \
+        order by category_id",[school_id]) //ucl 카테고리 안보내줌 수정 예정 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         var categoryList = new Array()
         for(result of results.rows){
             var category = new Object()
