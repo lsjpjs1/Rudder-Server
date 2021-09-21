@@ -23,9 +23,10 @@ async function commentRender(post_id, user_id){
             if(results.rows[i].user_nickname==null){
                 currentComment.user_id = results.rows[i].user_id.substr(0,1)+'******'
             }else{
-               
                 currentComment.user_id = results.rows[i].user_nickname.substr(0,1)+'******'
-                if (results.rows[i].user_nickname == "Rudder") currentComment.user_id = "Rudder"
+                if (results.rows[i].user_nickname == "Rudder"){
+                    currentComment.user_id = "Rudder"
+                }
             }
             currentComment.comment_id = results.rows[i].comment_id
             currentComment.comment_body = results.rows[i].comment_body
@@ -45,6 +46,9 @@ async function commentRender(post_id, user_id){
             currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
             if (results.rows[i].user_profile_image_id != null){
                 currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[i].user_profile_image_id
+            }
+            if (currentComment.user_id == "Rudder"){
+                currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/rudder_admin_profile_image'
             }
 
 

@@ -120,7 +120,7 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
             }else{
                 data.user_id = results.rows[i].user_nickname.substr(0,1)+'******'
                 if (results.rows[i].user_nickname == "Rudder"){
-                    data.user_id == "Rudder"
+                    data.user_id = "Rudder"
                 }
             }
             
@@ -158,6 +158,10 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
             data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
             if (results.rows[i].user_profile_image_id != null){
                 data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[i].user_profile_image_id
+            }
+
+            if (data.user_id == "Rudder"){
+                data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/rudder_admin_profile_image'
             }
 
             post.push(data)
