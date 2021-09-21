@@ -326,7 +326,7 @@ async function getNotice(os,version) {
     try{
         await client.query("BEGIN")
         const IOS_VERSION = ""
-        const ANDROID_VERSION = "2.0.1"
+        const ANDROID_VERSION = "2.0.2"
         var UPDATE_BODY = 'Please Update the App!'
         var NOTICE_BODY = "You are meeting an early stage of Rudder. Our community will get better with your opinions through “Contact Us”"
         const IS_EXIST = true
