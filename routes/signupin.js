@@ -325,6 +325,7 @@ async function profileImageList() {
 async function getNotice(os,version) { 
     try{
         await client.query("BEGIN")
+        console.log(version)
         const IOS_VERSION = ""
         const ANDROID_VERSION = "2.0.2"
         var UPDATE_BODY = 'Please Update the App!'
