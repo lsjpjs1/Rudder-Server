@@ -633,11 +633,11 @@ async function getUploadSignedUrls(contentTypes,user_info_id,post_id){
 async function userSelectCategoryList(user_info_id,school_id){
     try{
         const results = await client.query(" \
-        select * from user_select_category usc left join category cc on usc.category_id = cc.category_id where \
+        select cc.category_id,cc.category_name from category cc left join user_select_category usc on usc.category_id = cc.category_id where \
         case \
             when (select category_id from user_select_category where user_info_id = $1 limit 1) is null then school_id = $2 \
             else usc.user_info_id = $1 \
-        end",[user_info_id,school_id])
+        end group by cc.category_id",[user_info_id,school_id])
         var categoryList = new Array()
         for(result of results.rows){
             var category = new Object()
