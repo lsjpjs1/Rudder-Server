@@ -39,7 +39,8 @@ router.post("/categoryList",async function(req,res){
 
 async function categoryList(school_id=1){
     try{
-        const results = await client.query("select * from category where school_id = $1 \
+        const results = await client.query("select * from category \
+        where school_id = $1 and category_type = 'common' \
         order by category_id",[school_id]) 
         var categoryList = new Array()
         for(result of results.rows){
