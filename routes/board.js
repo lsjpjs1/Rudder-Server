@@ -25,6 +25,81 @@ const apn = require('apn');
 const { profile } = require('console');
 
 
+
+
+router.post("/clubCategoryList",async function(req,res){
+    var {school_id,token} = req.body
+    var user_info_id
+    console.log('schoolid',req.body.school_id)
+    console.log('token',req.body.token)
+    if(typeof token != 'undefined'){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        school_id=tmp.school_id
+        user_info_id = tmp.user_info_id
+    }
+    const categories = await clubCategoryList(school_id,user_info_id)
+    res.send(JSON.stringify({results:categories}))
+})
+
+
+
+async function clubCategoryList(school_id=1,user_info_id){
+    try{
+        if(typeof user_info_id != 'undefined'){
+            const results = await client.query("select c.*,cm.user_info_id as category_member_user_info_id,cjr.user_info_id as category_join_request_user_info_id from category as c \
+            left join \
+            (select * from category_member where user_info_id=$2) as cm \
+            on  \
+            c.category_id = cm.category_id \
+            left join \
+            (select * from category_join_request where user_info_id=$2) as cjr \
+            on  \
+            c.category_id = cjr.category_id \
+                        where school_id = $1 and category_type = 'club' \
+                        order by c.category_id",[school_id,user_info_id]) 
+            var categoryList = new Array()
+            for(result of results.rows){
+                var category = new Object()
+                category.category_id = result.category_id
+                category.category_name = result.category_name
+                category.school_id = result.school_id
+                category.category_type = result.category_type
+                if(result.category_member_user_info_id!=null){
+                    category.isMember='t'
+                }else if(result.category_join_request_user_info_id!=null){
+                    category.isMember='r'
+                }else{
+                    category.isMember='f'
+                }
+                categoryList.push(category)
+            }
+            return categoryList
+        }else{
+            const results = await client.query("select * from category \
+        where school_id = $1 and category_type = 'club' \
+        order by category_id",[school_id]) 
+        var categoryList = new Array()
+        for(result of results.rows){
+            var category = new Object()
+            category.category_id = result.category_id
+            category.category_name = result.category_name
+            category.school_id = result.school_id
+            category.category_type = result.category_type
+            category.isMember = 'f'
+            categoryList.push(category)
+        }
+        return categoryList
+        }
+        
+    }catch(ex){
+        console.log("Failed to execute categoryList"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
 router.post("/categoryList",async function(req,res){
     var {school_id,token} = req.body
     console.log('schoolid',req.body.school_id)
@@ -36,6 +111,8 @@ router.post("/categoryList",async function(req,res){
     const categories = await categoryList(school_id)
     res.send(JSON.stringify({results:categories}))
 })
+
+
 
 async function categoryList(school_id=1){
     try{
