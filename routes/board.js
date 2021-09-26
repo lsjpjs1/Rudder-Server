@@ -26,6 +26,26 @@ const { profile } = require('console');
 
 
 
+router.post("/requestJoinClub",async function(req,res){
+    var {token,category_id,request_body} = req.body
+    const tmp = jwt.verify(token,SECRET_KEY)
+    const results = await requestJoinClub(category_id,tmp.user_info_id,request_body)
+    res.send(JSON.stringify({results:results}))
+})
+
+async function requestJoinClub(category_id,user_info_id,request_body){
+    try{
+        await client.query("insert into category_join_request values (default,$1,$2,$3)",[category_id,user_info_id,request_body]) 
+        return {isSuccess:true}
+    }catch(ex){
+        console.log("Failed to execute requestJoinClub"+ex)
+        await client.query("ROLLBACK")
+        return {isSuccess:false}
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
 
 router.post("/clubCategoryList",async function(req,res){
     var {school_id,token} = req.body
