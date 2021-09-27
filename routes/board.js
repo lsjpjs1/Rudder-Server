@@ -24,7 +24,26 @@ const s3Client = new S3Client({ region: REGION,credentials:{accessKeyId:process.
 const apn = require('apn');
 const { profile } = require('console');
 
+router.post("/approveJoinClub",async function(req,res){
+    var {category_id,user_info_id} = req.body
+    const results = await approveJoinClub(category_id,user_info_id)
+    res.send(JSON.stringify({results:results}))
+})
 
+async function approveJoinClub(category_id,user_info_id){
+    try{
+        await client.query("delete from category_join_request where category_id = $1 and user_info_id = $2",[category_id,user_info_id]) 
+        await client.query("insert into category_member values (default,$1,$2)",[category_id,user_info_id]) 
+        return {isSuccess:true}
+    }catch(ex){
+        console.log("Failed to execute approveJoinClub"+ex)
+        await client.query("ROLLBACK")
+        return {isSuccess:false}
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
 
 router.post("/requestJoinClub",async function(req,res){
     var {token,category_id,request_body} = req.body
@@ -164,14 +183,14 @@ router.post("/renderPost",async function(req,res){
     
     if(tk.decodeToken(token)){
         const tmp = jwt.verify(token,SECRET_KEY)
-        var jsonData = await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody);
+        var jsonData = await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody,tmp.user_info_id);
         
         res.send(jsonData);
     }
     
 })
 
-async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id,school_id,searchBody=""){
+async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id,school_id,searchBody="",user_info_id){
     try{
         await client.query("BEGIN");
         var searchStr = " '%"+searchBody+"%' "
@@ -189,8 +208,8 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
                 having bt.board_type_name = $2 and b.is_delete = false and b.post_body like "+searchStr
         if(endPostId == -1){
             if(category_id==-1){
-                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
-                and b.school_id=$4 order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id])
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$5) and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
+                and b.school_id=$4 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$5) order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
             }else{
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and category_id=$4 and school_id=$5 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$5 and b.category_id=$4 order by post_id desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,category_id,school_id])
@@ -198,8 +217,8 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
             
         }else{
             if(category_id==-1){
-                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 and post_body like "+searchStr+" order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
-                and b.school_id=$5 and b.post_id < $3 order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE,school_id])
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$6) and post_body like "+searchStr+" order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
+                and b.school_id=$5 and b.post_id < $3 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$6) order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
             }else{
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and category_id=$4 and school_id=$6 and post_body like "+searchStr+" order by post_id desc limit $5  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$6 and b.post_id < $3 and b.category_id=$4 order by post_id desc",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE,school_id])
