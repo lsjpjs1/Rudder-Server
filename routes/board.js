@@ -208,8 +208,8 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
                 having bt.board_type_name = $2 and b.is_delete = false and b.post_body like "+searchStr
         if(endPostId == -1){
             if(category_id==-1){
-                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$5) and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
-                and b.school_id=$4 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$5) order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$5)) and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
+                and b.school_id=$4 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$5)) order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
             }else{
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and category_id=$4 and school_id=$5 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$5 and b.category_id=$4 order by post_id desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,category_id,school_id])
@@ -217,8 +217,8 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
             
         }else{
             if(category_id==-1){
-                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$6) and post_body like "+searchStr+" order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
-                and b.school_id=$5 and b.post_id < $3 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$6) order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
+                var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$6)) and post_body like "+searchStr+" order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
+                and b.school_id=$5 and b.post_id < $3 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$6)) order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
             }else{
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and category_id=$4 and school_id=$6 and post_body like "+searchStr+" order by post_id desc limit $5  ) as not_delete order by post_id asc limit 1) \
                 and b.school_id=$6 and b.post_id < $3 and b.category_id=$4 order by post_id desc",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE,school_id])
