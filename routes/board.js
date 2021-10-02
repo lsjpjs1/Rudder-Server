@@ -82,10 +82,12 @@ router.post("/clubCategoryList",async function(req,res){
 
 
 
-async function clubCategoryList(school_id=1,user_info_id){
+async function clubCategoryList(school_id=1,user_info_id=-1){
     try{
         if(typeof user_info_id != 'undefined'){
-            const results = await client.query("select c.*,cm.user_info_id as category_member_user_info_id,cjr.user_info_id as category_join_request_user_info_id from category as c \
+            const results = await client.query("select c.*,cm.user_info_id as category_member_user_info_id,cjr.user_info_id as category_join_request_user_info_id, \
+            (select user_info_id from user_select_category where category_id = c.category_id and user_info_id = $2) \
+            from category as c \
             left join \
             (select * from category_member where user_info_id=$2) as cm \
             on  \
@@ -109,6 +111,11 @@ async function clubCategoryList(school_id=1,user_info_id){
                     category.isMember='r'
                 }else{
                     category.isMember='f'
+                }
+                if(result.user_info_id==null){
+                    category.isSelect = false
+                }else{
+                    category.isSelect = true
                 }
                 categoryList.push(category)
             }
@@ -143,25 +150,34 @@ router.post("/categoryList",async function(req,res){
     var {school_id,token} = req.body
     console.log('schoolid',req.body.school_id)
     console.log('token',req.body.token)
+    var user_info_id
     if(typeof token != 'undefined'){
+        console.log(SECRET_KEY)
         const tmp = jwt.verify(token,SECRET_KEY)
         school_id=tmp.school_id
+        user_info_id = tmp.user_info_id
     }
-    const categories = await categoryList(school_id)
+    const categories = await categoryList(school_id,user_info_id)
     res.send(JSON.stringify({results:categories}))
 })
 
 
 
-async function categoryList(school_id=1){
+async function categoryList(school_id=1,user_info_id=-1){
     try{
-        const results = await client.query("select * from category \
+        const results = await client.query("select c.*,(select user_info_id from user_select_category where category_id = c.category_id and user_info_id = $2) from category as c\
         where school_id = $1 and category_type = 'common' \
-        order by category_order",[school_id]) 
+        order by category_order",[school_id,user_info_id]) 
         var categoryList = new Array()
         for(result of results.rows){
             var category = new Object()
-            category = result
+            category.category_id = result.category_id
+            category.category_name = result.category_name
+            if(result.user_info_id==null){
+                category.isSelect = false
+            }else{
+                category.isSelect = true
+            }
             categoryList.push(category)
         }
         return categoryList
