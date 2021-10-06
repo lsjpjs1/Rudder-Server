@@ -1005,10 +1005,10 @@ router.get("/seeAllReview",async function(req,res){
 router.get("/seeAllUser",async function(req,res){
     
 
-    const result = await client.query("select * from user_info where user_info_id>=68 order by user_info_id desc")
+    const result = await client.query("select ui.*,rc.code,u.school_name from user_info as ui left join recommendation_code as rc on ui.user_info_id = rc.user_info_id left join university as u on u.school_id = ui.school_id order by user_info_id desc")
     var text = result.rows.length.toString()+'<br/>'
     for(var i =0;i<result.rows.length;i++){
-        text = text+'<b>'+result.rows[i].user_id+'</b>'+' : '+ result.rows[i].user_email+'<br/>'+'<br/>'
+        text = text+'<b>'+result.rows[i].user_id+'</b>'+' : '+ result.rows[i].user_email+'   /  '+ result.rows[i].code+'   /  '+ result.rows[i].school_name+'<br/>'+'<br/>'
         
     }
     res.send(text)
