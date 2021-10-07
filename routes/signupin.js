@@ -265,7 +265,7 @@ async function schoolList() {
     try{
         await client.query("BEGIN")
         
-        const results=await client.query("select * from university")
+        const results=await client.query("select * from university order by school_id")
         var schoolList = new Array()
         console.log(results.rows)
         for(result of results.rows){
