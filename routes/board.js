@@ -165,7 +165,9 @@ router.post("/categoryList",async function(req,res){
 
 async function categoryList(school_id=1,user_info_id=-1){
     try{
-        const results = await client.query("select c.*,(select user_info_id from user_select_category where category_id = c.category_id and user_info_id = $2) from category as c\
+        const results = await client.query("select c.*,usc.user_info_id from category as c \
+		left join (select user_info_id,category_id from user_select_category where  user_info_id = $2) as usc \
+		on usc.category_id = c.category_id \
         where school_id = $1 and category_type = 'common' \
         order by category_order",[school_id,user_info_id]) 
         var categoryList = new Array()
