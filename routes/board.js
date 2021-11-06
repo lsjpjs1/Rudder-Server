@@ -1033,7 +1033,7 @@ router.get("/seeRecoCode",async function(req,res){
 })
 
 router.get("/addPostPage",async function(req,res){
-    res.sendFile(path.join(__dirname, 'addPostPage.html'));
+    res.sendFile(__dirname + '/addPostPage.html');
 })
 
 router.post("/tt",async function(req,res){
