@@ -24,6 +24,8 @@ const s3Client = new S3Client({ region: REGION,credentials:{accessKeyId:process.
 const apn = require('apn');
 const { profile } = require('console');
 
+const path = require('path')
+
 router.post("/approveJoinClub",async function(req,res){
     var {category_id,user_info_id} = req.body
     const results = await approveJoinClub(category_id,user_info_id)
@@ -1028,6 +1030,16 @@ router.get("/seeRecoCode",async function(req,res){
     }
     text=text+'</table>'
     res.send(text)
+})
+
+router.get("/addPostPage",async function(req,res){
+    res.sendFile(path.join(__dirname, '../public', 'addPostPage.html'));
+})
+
+router.post("/tt",async function(req,res){
+    const {school_id,post_body} = req.body
+    console.log(school_id,post_body)
+        res.send(JSON.stringify({school_id:school_id,post_body:post_body}))
 })
 
 module.exports = router;
