@@ -98,7 +98,7 @@ async function clubCategoryList(school_id=1,user_info_id=-1){
             (select * from category_join_request where user_info_id=$2) as cjr \
             on  \
             c.category_id = cjr.category_id \
-                        where school_id = $1 and category_type = 'club' \
+                        where school_id = $1 and category_type = 'club' and category_enable = true \
                         order by c.category_id",[school_id,user_info_id]) 
             var categoryList = new Array()
             for(result of results.rows){
@@ -170,7 +170,7 @@ async function categoryList(school_id=1,user_info_id=-1){
         const results = await client.query("select c.*,usc.user_info_id from category as c \
 		left join (select user_info_id,category_id from user_select_category where  user_info_id = $2) as usc \
 		on usc.category_id = c.category_id \
-        where school_id = $1 and category_type = 'common' \
+        where school_id = $1 and category_type = 'common' and category_enable = true  \
         order by category_order",[school_id,user_info_id]) 
         var categoryList = new Array()
         for(result of results.rows){
@@ -770,7 +770,8 @@ async function getUploadSignedUrls(contentTypes,user_info_id,post_id){
 async function userSelectCategoryList(user_info_id,school_id){
     try{
         const results = await client.query(" \
-        select cc.category_id,cc.category_name from category cc left join user_select_category usc on usc.category_id = cc.category_id where \
+        select cc.category_id,cc.category_name from category cc left join user_select_category usc on usc.category_id = cc.category_id \
+        where and category_enable = true and \
         case \
             when (select category_id from user_select_category where user_info_id = $1 limit 1) is null then school_id = $2 and category_type='common'\
             else usc.user_info_id = $1 \
