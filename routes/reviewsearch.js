@@ -104,7 +104,19 @@ async function reportCount(post_type,post_id){
             await client.query("update report_count set report_count=report_count+1 where post_type=$1 and post_id=$2",[post_type,post_id])
         }
         await client.query("COMMIT")
-       
+
+
+        const results2= await client.query("select * from report_count where post_type=$1 and post_id=$2",[post_type,post_id])
+        const row = results2.rows[0]
+        if(row.report_count>=1){
+            await client.query("BEGIN")
+            if(row.post_type=='post'){
+                await client.query("update board set is_delete=true where post_id=$1",[post_id])
+            }else if(row.post_type=='comment'){
+                await client.query("update board_comment set is_delete=true where comment_id=$1",[post_id])
+            }
+            await client.query("COMMIT")
+        }
 
     }catch(ex){
         console.log("Failed to execute reportReceive"+ex)
