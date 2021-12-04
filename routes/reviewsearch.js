@@ -108,7 +108,7 @@ async function reportCount(post_type,post_id){
 
         const results2= await client.query("select * from report_count where post_type=$1 and post_id=$2",[post_type,post_id])
         const row = results2.rows[0]
-        if(row.report_count>=1){
+        if(row.report_count>=5){
             await client.query("BEGIN")
             if(row.post_type=='post'){
                 await client.query("update board set is_delete=true where post_id=$1",[post_id])
