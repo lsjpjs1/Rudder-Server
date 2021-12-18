@@ -224,8 +224,9 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
                 left join board_type as bt on b.board_type_id = bt.board_type_id \
                 left join category as c on b.category_id = c.category_id \
                 left join board_image as b_image on b.post_id = b_image.post_id \
-                group by ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit \
-                having bt.board_type_name = $2 and b.is_delete = false and b.post_body like "+searchStr
+                left join (select (select user_id from user_info where user_block.blocked_user_info_id=user_info.user_info_id),user_block.blocked_user_info_id from user_block) as ub on ub.user_id = b.user_id \
+                group by ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit,ub.blocked_user_info_id \
+                having bt.board_type_name = $2 and b.is_delete = false and ub.blocked_user_info_id is null and b.post_body like "+searchStr
         if(endPostId == -1){
             if(category_id==-1){
                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$5)) and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \

@@ -44,11 +44,14 @@ async function blockUser(user_info_id,blockUserId){
   }
 }
 
+
+//user가 user 차단하는 api
 router.post("/blockUser",async function(req,res){
 
   const {token,blockUserId} = req.body
   if(tk.decodeToken(token)){
     const tmp = jwt.verify(token,SECRET_KEY)
+    console.log(tmp)
     await blockUser(tmp.user_info_id,blockUserId)
     res.send(JSON.stringify({results:{isSuccess:true}}))
   }
