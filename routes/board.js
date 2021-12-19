@@ -214,7 +214,7 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
     try{
         await client.query("BEGIN");
         var searchStr = " '%"+searchBody+"%' "
-        var baseQuery = "SELECT b.*,ui.user_nickname,ui.user_profile_image_id,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
+        var baseQuery = "SELECT b.*,ui.user_info_id,ui.user_nickname,ui.user_profile_image_id,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
         (select left_join_res.* from \
             (select b.*,bl.user_id as like_user_id from \
                 board as b left join \
@@ -225,7 +225,7 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
                 left join category as c on b.category_id = c.category_id \
                 left join board_image as b_image on b.post_id = b_image.post_id \
                 left join (select (select user_id from user_info where user_block.blocked_user_info_id=user_info.user_info_id),user_block.blocked_user_info_id from user_block) as ub on ub.user_id = b.user_id \
-                group by ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit,ub.blocked_user_info_id \
+                group by ui.user_info_id,ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit,ub.blocked_user_info_id \
                 having bt.board_type_name = $2 and b.is_delete = false and ub.blocked_user_info_id is null and b.post_body like "+searchStr
         if(endPostId == -1){
             if(category_id==-1){
@@ -260,7 +260,7 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
                     data.user_id = "Rudder"
                 }
             }
-            
+            data.user_info_id = results.rows[i].user_info_id
             data.post_body = results.rows[i].post_body
             data.post_title = results.rows[i].post_title
             data.post_time = results.rows[i].post_time
