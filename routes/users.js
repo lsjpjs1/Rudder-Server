@@ -30,10 +30,10 @@ router.post("/addUserRequest",async function(req,res){
 });
 
 
-async function blockUser(user_info_id,blockUserId){
+async function blockUser(user_info_id,blockUserInfoId){
   try{
     await client.query("BEGIN")
-    await client.query("insert into user_block values (default,$1,(select user_info_id from user_info where user_id = $2))",[user_info_id,blockUserId])
+    await client.query("insert into user_block values (default,$1,$2)",[user_info_id,blockUserInfoId])
     await client.query("COMMIT")
   }catch(ex){
       console.log("Failed to execute blockUser"+ex)
@@ -48,11 +48,11 @@ async function blockUser(user_info_id,blockUserId){
 //user가 user 차단하는 api
 router.post("/blockUser",async function(req,res){
 
-  const {token,blockUserId} = req.body
+  const {token,blockUserInfoId} = req.body
   if(tk.decodeToken(token)){
     const tmp = jwt.verify(token,SECRET_KEY)
     console.log(tmp)
-    await blockUser(tmp.user_info_id,blockUserId)
+    await blockUser(tmp.user_info_id,blockUserInfoId)
     res.send(JSON.stringify({results:{isSuccess:true}}))
   }
 });
