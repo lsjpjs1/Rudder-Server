@@ -57,4 +57,44 @@ router.post("/blockUser",async function(req,res){
   }
 });
 
+async function updateNickname(user_info_id,nickname){
+  try{
+    await client.query("BEGIN")
+    await client.query("update user_info set user_nickname=$1 where user_info_id=$2",[nickname,user_info_id])
+    await client.query("COMMIT")
+    return true
+  }catch(ex){
+      console.log("Failed to execute updateNickname"+ex)
+      await client.query("ROLLBACK")
+      return false
+  }finally{
+     // await client.end()
+      console.log("Cleaned.") 
+  }
+}
+
+
+router.post("/updateNickname",async function(req,res){
+
+  const {token,nickname} = req.body
+  console.log(token)
+  if(tk.decodeToken(token)){
+    const tmp = jwt.verify(token,SECRET_KEY)
+    const results = await client.query("select * from user_info where user_nickname=$1",[nickname])
+    //닉네임 중복체크
+    if(results.rows.length>0){
+      res.send(JSON.stringify({results:{isSuccess:false,error:'duplicate'}}))
+    }else{
+      const result = await updateNickname(tmp.user_info_id,nickname)
+      if (result){
+        res.send(JSON.stringify({results:{isSuccess:true,error:''}}))
+      }else{
+        res.send(JSON.stringify({results:{isSuccess:false,error:'database'}}))
+      }
+    }
+    
+    
+  }
+});
+
 module.exports = router;
