@@ -97,4 +97,38 @@ router.post("/updateNickname",async function(req,res){
   }
 });
 
+async function updateUserProfileImage(user_info_id,profileImageId){
+  try{
+    await client.query("BEGIN")
+    await client.query("update user_profile set user_profile_image_id=$1 where profile_id = (select profile_id from user_info where user_info_id =$2)",[profileImageId,user_info_id])
+    await client.query("COMMIT")
+    return true
+  }catch(ex){
+      console.log("Failed to execute updateUserProfileImage"+ex)
+      await client.query("ROLLBACK")
+      return false
+  }finally{
+     // await client.end()
+      console.log("Cleaned.") 
+  }
+}
+
+router.post("/updateUserProfileImage",async function(req,res){
+
+  
+  const {token,profileImageId} = req.body
+  if(tk.decodeToken(token)){
+    const tmp = jwt.verify(token,SECRET_KEY)
+    const result = await updateUserProfileImage(tmp.user_info_id,profileImageId)
+    if (result){
+      res.send(JSON.stringify({results:{isSuccess:true,error:''}}))
+    }else{
+      res.send(JSON.stringify({results:{isSuccess:false,error:'database'}}))
+    }
+    
+    
+    
+  }
+});
+
 module.exports = router;
