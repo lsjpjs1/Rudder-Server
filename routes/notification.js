@@ -8,6 +8,14 @@ const apn = require('apn')
 module.exports.notificationFromToken = async function (os, notification_token,body) {
     if (typeof os != "undefined" && typeof notification_token != "undefined") {
         console.log(__dirname.toString())
+        var production
+
+        if (process.env.DB_HOST == "rudder-test.cr2cm6ddpemq.ap-northeast-2.rds.amazonaws.com"){
+            production = false
+        } else {
+            production = true
+        }
+        
         if (os == 'ios') {
             var option = {
                 token: {
@@ -15,7 +23,7 @@ module.exports.notificationFromToken = async function (os, notification_token,bo
                     keyId: process.env.APN_KEY_ID,
                     teamId: process.env.APN_TEAM_ID
                 },
-                production: false
+                production: production
             };
             let apn_provider = new apn.Provider(option)
             // 앱에서 APNs에 앱을 등록하고, 얻은 값.
