@@ -78,4 +78,65 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
     }
   });
 
+  async function getMyMessages(user_info_id){
+    try{
+      await client.query("BEGIN")
+      const results = await client.query("\
+        select msg.*, receive_ui.user_nickname as receive_user_nickname, send_ui.user_nickname as send_user_nickname \
+        from post_message msg \
+        left join \
+          user_info receive_ui \
+        on receive_ui.user_info_id = msg.receive_user_info_id \
+        left join \
+          user_info send_ui \
+        on send_ui.user_info_id = msg.send_user_info_id \
+        where send_user_info_id = $1 or receive_user_info_id = $1 \
+        order by msg.message_send_time desc \
+        ",[user_info_id])
+      var messages = new Array()
+      for(result of results.rows){
+          var message = new Object()
+          message.receiveUserInfoId = result.receive_user_info_id
+          message.sendUserInfoId = result.send_user_info_id
+          message.messageBody = result.post_message_body
+          message.isRead = result.is_read
+          message.messageSendTime = result.message_send_time
+          message.postMessageId = result.post_message_id
+          message.sendUserNickname = result.send_user_nickname
+          message.receiveUserNickname = result.receive_user_nickname
+
+          messages.push(message)
+      }
+      return messages
+
+    }catch(ex){
+        console.log("Failed to execute getMyMessages"+ex)
+        await client.query("ROLLBACK")
+        return false
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+  }
+
+  router.post("/getMyMessages",async function(req,res){
+  
+    
+    const {token} = req.body
+    if(tk.decodeToken(token)){
+      const tmp = jwt.verify(token,SECRET_KEY)
+      const messages = await getMyMessages(tmp.user_info_id)
+      if (messages){
+        res.send(JSON.stringify({results:{isSuccess:true,error:'',messages:messages}}))
+      }else{
+        res.send(JSON.stringify({results:{isSuccess:false,error:'database',messages:[]}}))
+      }
+      
+      
+      
+    }
+  });
+
+  
+
 module.exports = router;
