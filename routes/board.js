@@ -24,7 +24,8 @@ const s3Client = new S3Client({ region: REGION,credentials:{accessKeyId:process.
 const apn = require('apn');
 const { profile } = require('console');
 
-const path = require('path')
+const path = require('path');
+const { strictEqual } = require('assert');
 
 router.post("/approveJoinClub",async function(req,res){
     var {category_id,user_info_id} = req.body
@@ -224,7 +225,7 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
                 left join board_type as bt on b.board_type_id = bt.board_type_id \
                 left join category as c on b.category_id = c.category_id \
                 left join board_image as b_image on b.post_id = b_image.post_id \
-                left join (select (select user_id from user_info where user_block.blocked_user_info_id=user_info.user_info_id),user_block.blocked_user_info_id from user_block) as ub on ub.user_id = b.user_id \
+                left join (select (select user_id from user_info where user_block.blocked_user_info_id=user_info.user_info_id),user_block.blocked_user_info_id from user_block where user_block.user_info_id = "+ user_info_id.toString() +") as ub on ub.user_id = b.user_id \
                 group by ui.user_info_id,ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit,ub.blocked_user_info_id \
                 having bt.board_type_name = $2 and b.is_delete = false and ub.blocked_user_info_id is null and b.post_body like "+searchStr
         if(endPostId == -1){
