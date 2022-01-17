@@ -315,6 +315,110 @@ async function renderPost(board_type='bulletin',endPostId=-1,category_id=-1,user
     }
 }
 
+router.post("/myPosts",async function(req,res){
+    console.log("myPosts is called")
+    
+    const {token} = req.body; 
+    console.log(req.body)
+    
+    if(tk.decodeToken(token)){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        var jsonData = await myPosts("bulletin",-1,-1,tmp.user_id,tmp.school_id,"",tmp.user_info_id);
+        
+        res.send(jsonData);
+    }
+    
+})
+
+async function myPosts(board_type='bulletin',endPostId=-1,category_id=-1,user_id,school_id,searchBody="",user_info_id){
+    try{
+        await client.query("BEGIN");
+        var searchStr = " '%"+searchBody+"%' "
+        var baseQuery = "SELECT b.*,ui.user_info_id,ui.user_nickname,ui.user_profile_image_id,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
+        (select left_join_res.* from \
+            (select b.*,bl.user_id as like_user_id from \
+                board as b left join \
+                (select * from board_like where user_id=$1) as bl \
+                on b.post_id = bl.post_id order by b.post_id) as left_join_res) as b \
+                left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on b.user_id = ui.user_id \
+                left join board_type as bt on b.board_type_id = bt.board_type_id \
+                left join category as c on b.category_id = c.category_id \
+                left join board_image as b_image on b.post_id = b_image.post_id \
+                left join (select (select user_id from user_info where user_block.blocked_user_info_id=user_info.user_info_id),user_block.blocked_user_info_id from user_block where user_block.user_info_id = "+ user_info_id.toString() +") as ub on ub.user_id = b.user_id \
+                group by ui.user_id,ui.user_info_id,ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit,ub.blocked_user_info_id \
+                having bt.board_type_name = $2 and b.is_delete = false and ub.blocked_user_info_id is null and ui.user_id = $1 and b.post_body like "+searchStr
+
+        var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$5)) and user_id = $1 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
+        and b.school_id=$4 and (c.category_type = 'common' or c.category_id in (select category_id from category_member where user_info_id=$5)) order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
+
+        
+        
+
+        var post = new Array()
+        for(i=0;i<results.rows.length;i++){
+            var data = new Object()
+            data.post_id = results.rows[i].post_id
+            if(results.rows[i].user_nickname==null){
+                data.user_id = results.rows[i].user_id.substr(0,1)+'******'
+            }else{
+                data.user_id = results.rows[i].user_nickname.substr(0,1)+'******'
+                if (results.rows[i].user_nickname == "Rudder"){
+                    data.user_id = "Rudder"
+                }
+            }
+            data.user_info_id = results.rows[i].user_info_id
+            data.post_body = results.rows[i].post_body
+            data.post_title = results.rows[i].post_title
+            data.post_time = results.rows[i].post_time
+            data.comment_count = results.rows[i].comment_count
+            data.like_count = results.rows[i].like_count
+            data.post_view = results.rows[i].post_view
+            data.category_id = results.rows[i].category_id
+            if (data.category_id == null || typeof data.category_id=='undefined'){
+                data.category_id = 1
+            }
+            data.category_name = results.rows[i].category_name
+            if (data.category_name == null || typeof data.category_name=='undefined'){
+                data.category_name = "Random"
+            }
+            data.is_delete = results.rows[i].is_delete
+            data.imageUrls = new Array()
+            if(results.rows[i].image_names!=null){
+                for(image_name of results.rows[i].image_names.split(',')){
+                    data.imageUrls.push(process.env.CLOUDFRONT_URL+image_name)
+                }
+            }   
+            if(results.rows[i].like_user_id==null){
+                data.isLiked = false
+            }else{
+                data.isLiked = true
+            }
+            data.isMine=false
+            if(results.rows[i].user_id==user_id){
+                data.isMine=true
+            }
+
+            data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
+            if (results.rows[i].user_profile_image_id != null){
+                data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[i].user_profile_image_id
+            }
+
+            if (data.user_id == "Rudder"){
+                data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/rudder_admin_profile_image'
+            }
+
+            post.push(data)
+        }
+        var jsonData = JSON.stringify(post)
+        return jsonData;
+    }catch(ex){
+        console.log("Failed to execute board"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
 
 
 
