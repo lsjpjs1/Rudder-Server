@@ -211,7 +211,7 @@ router.post("/renderPost",async function(req,res){
     
 })
 
-async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id,school_id,searchBody="",user_info_id){
+async function renderPost(board_type='bulletin',endPostId=-1,category_id=-1,user_id,school_id,searchBody="",user_info_id){
     try{
         await client.query("BEGIN");
         var searchStr = " '%"+searchBody+"%' "
@@ -314,6 +314,9 @@ async function renderPost(board_type='bulletin',endPostId,category_id=-1,user_id
         console.log("Cleaned.") 
     }
 }
+
+
+
 
 // router.post("/categoryList",async function(req,res){
 //     const categories = await categoryList()
