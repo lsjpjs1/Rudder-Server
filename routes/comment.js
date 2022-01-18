@@ -146,8 +146,9 @@ async function editComment(comment_body,comment_id){
     }
 }
 
-async function myComments(user_id){
+async function myComments(user_id,page){
     try{
+        const offset = page * 20
         await client.query("BEGIN")
         const results = await client.query("\
         select left_join_res.*,bcl.user_id as like_user_id \
@@ -170,7 +171,9 @@ async function myComments(user_id){
         on \
             left_join_res.comment_id = bcl.comment_id \
         where \
-            is_delete=false order by post_time desc",[user_id])
+            is_delete=false order by post_time desc \
+        limit 20 \
+        offset $2",[user_id,offset])
         var comments = new Array()
         for(var i=0;i<results.rows.length;i++){
             var currentComment  = new Object()
@@ -222,10 +225,10 @@ async function myComments(user_id){
 
 router.post("/myComments",async function(req,res){
     console.log("myComments is called")
-    const {token} = req.body; 
+    const {token,page} = req.body; 
     if(tk.decodeToken(token)){
         var decodedToken = jwt.verify(token,SECRET_KEY)
-        var comments=await myComments(decodedToken.user_id);
+        var comments=await myComments(decodedToken.user_id,page);
         var jsonData=JSON.stringify({results:comments})
         res.send(jsonData);
     }else{
