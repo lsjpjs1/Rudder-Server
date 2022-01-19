@@ -104,39 +104,38 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
     }
   });
 
-  async function getMyMessages(user_info_id){
+  async function getMyMessageRooms(user_info_id){
     try{
       await client.query("BEGIN")
       const results = await client.query("\
-        select msg.*, receive_ui.user_nickname as receive_user_nickname, send_ui.user_nickname as send_user_nickname \
-        from post_message msg \
-        left join \
-          user_info receive_ui \
-        on receive_ui.user_info_id = msg.receive_user_info_id \
-        left join \
-          user_info send_ui \
-        on send_ui.user_info_id = msg.send_user_info_id \
-        where send_user_info_id = $1 or receive_user_info_id = $1 \
-        order by msg.message_send_time desc \
-        ",[user_info_id])
-      var messages = new Array()
+      select * \
+      from \
+        (select distinct on (pmr.post_message_room_id) *,(select user_nickname from user_info where user_info_id = (select user_info_id from post_message_room_member where post_message_room_id = pmr.post_message_room_id and user_info_id != pmrm.user_info_id) ) as target_user_nickname \
+        from post_message_room pmr \
+        left join post_message_room_member pmrm on pmrm.post_message_room_id = pmr.post_message_room_id \
+        left join post_message pm on pm.post_message_room_id = pmr.post_message_room_id \
+        where \
+        pmrm.user_info_id = $1) as res \
+      order by res.post_message_id desc ",[user_info_id])
+      var rooms = new Array()
       for(result of results.rows){
-          var message = new Object()
-          message.receiveUserInfoId = result.receive_user_info_id
-          message.sendUserInfoId = result.send_user_info_id
-          message.messageBody = result.post_message_body
-          message.isRead = result.is_read
-          message.messageSendTime = result.message_send_time
-          message.postMessageId = result.post_message_id
-          message.sendUserNickname = result.send_user_nickname
-          message.receiveUserNickname = result.receive_user_nickname
+          var room = new Object()
+          room.postMessageRoomId = result.post_message_room_id
+          room.messageSendTime = result.message_send_time
+          room.postMessageBody = result.post_message_body
+          room.userId = result.target_user_id
+          if (result.target_user_nickname != null){
+            room.userId = result.target_user_nickname
+          }
+          
 
-          messages.push(message)
+
+          rooms.push(room)
       }
-      return messages
+      return rooms
 
     }catch(ex){
-        console.log("Failed to execute getMyMessages"+ex)
+        console.log("Failed to execute getMyMessageRooms"+ex)
         await client.query("ROLLBACK")
         return false
     }finally{
@@ -145,17 +144,17 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
     }
   }
 
-  router.post("/getMyMessages",async function(req,res){
+  router.post("/getMyMessageRooms",async function(req,res){
   
     
     const {token} = req.body
     if(tk.decodeToken(token)){
       const tmp = jwt.verify(token,SECRET_KEY)
-      const messages = await getMyMessages(tmp.user_info_id)
+      const messages = await getMyMessageRooms(tmp.user_info_id)
       if (messages){
-        res.send(JSON.stringify({results:{isSuccess:true,error:'',messages:messages}}))
+        res.send(JSON.stringify({results:{isSuccess:true,error:'',rooms:messages}}))
       }else{
-        res.send(JSON.stringify({results:{isSuccess:false,error:'database',messages:[]}}))
+        res.send(JSON.stringify({results:{isSuccess:false,error:'database',rooms:[]}}))
       }
       
       
