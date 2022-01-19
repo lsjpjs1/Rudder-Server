@@ -9,7 +9,33 @@ const notification = require("./notification")
 async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBody){
     try{
       await client.query("BEGIN")
-      await client.query("insert into post_message values (default,$1,$2,default,$3,default)",[send_user_info_id,receive_user_info_id,messageBody])
+      const post_message_room = await client.query("\
+      insert into post_message_room \
+      select where not exists (SELECT * from post_message_room_member pmrm1 \
+        left join post_message_room_member pmrm2 on \
+        pmrm1.post_message_room_id = pmrm2.post_message_room_id \
+        where (pmrm1.user_info_id = $1 and pmrm2.user_info_id = $2) or (pmrm1.user_info_id = $2 and pmrm2.user_info_id = $1) ) returning *",[send_user_info_id,receive_user_info_id])
+
+      var post_message_room_id
+
+      if(typeof post_message_room.rows[0] != "undefined"){
+        console.log("hit1")
+        post_message_room_id = post_message_room.rows[0].post_message_room_id
+        
+        await client.query("insert into post_message_room_member values (default,$1,$2)",[post_message_room.rows[0].post_message_room_id,send_user_info_id])
+        await client.query("insert into post_message_room_member values (default,$1,$2)",[post_message_room.rows[0].post_message_room_id,receive_user_info_id])
+      }else{
+        console.log("hit2")
+        const res= await client.query("SELECT * from post_message_room_member pmrm1 \
+        left join post_message_room_member pmrm2 on \
+        pmrm1.post_message_room_id = pmrm2.post_message_room_id \
+        where (pmrm1.user_info_id = $1 and pmrm2.user_info_id = $2) or (pmrm1.user_info_id = $2 and pmrm2.user_info_id = $1)",[send_user_info_id,receive_user_info_id])
+        console.log(res.rows[0].post_message_room_id)
+        post_message_room_id = res.rows[0].post_message_room_id
+        
+      }
+      
+      await client.query("insert into post_message values (default,$1,$2,default,$3,default,$4)",[send_user_info_id,receive_user_info_id,messageBody,post_message_room_id])
       await client.query("COMMIT")
       const result = await client.query("select * from user_info where user_info_id = $1",[receive_user_info_id])
       const os = result.rows[0].os
