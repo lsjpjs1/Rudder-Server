@@ -115,7 +115,9 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
         left join post_message_room_member pmrm on pmrm.post_message_room_id = pmr.post_message_room_id \
         left join post_message pm on pm.post_message_room_id = pmr.post_message_room_id \
         where \
-        pmrm.user_info_id = $1) as res \
+        pmrm.user_info_id = $1 \
+        order by pmr.post_message_room_id,pm.post_message_id desc \
+        ) as res \
       order by res.post_message_id desc ",[user_info_id])
       var rooms = new Array()
       for(result of results.rows){
