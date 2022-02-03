@@ -197,10 +197,8 @@ async function categoryList(school_id=1,user_info_id=-1){
 
 
 router.post("/renderPost",async function(req,res){
-    console.log("renderPost is called")
     
     const {board_type,endPostId,category_id,token,searchBody} = req.body; 
-    console.log(req.body)
     
     if(tk.decodeToken(token)){
         const tmp = jwt.verify(token,SECRET_KEY)
