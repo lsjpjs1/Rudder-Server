@@ -15,7 +15,7 @@ module.exports.notificationFromToken = async function (os, notification_token,bo
         } else {
             production = true
         }
-        
+        console.log(production)
         if (os == 'ios') {
             var option = {
                 token: {
