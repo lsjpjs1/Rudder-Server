@@ -23,7 +23,7 @@ module.exports.notificationFromToken = async function (os, notification_token,bo
                     keyId: process.env.APN_KEY_ID,
                     teamId: process.env.APN_TEAM_ID
                 },
-                production: production
+                production: false
             };
             let apn_provider = new apn.Provider(option)
             // 앱에서 APNs에 앱을 등록하고, 얻은 값.
