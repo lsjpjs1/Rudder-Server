@@ -317,7 +317,7 @@ async function renderPost(board_type='bulletin',endPostId=-1,category_id=-1,user
 
 router.post("/myPosts",async function(req,res){
     console.log("myPosts is called")
-    
+    //offset : int = 0,1,2,3...... 0페이지,1페이지,2페이지,3페이지....  default = 0
     const {token,offset} = req.body; 
     console.log(req.body)
     
@@ -414,7 +414,7 @@ async function myPosts(board_type='bulletin',endPostId=-1,category_id=-1,user_id
         var jsonData = JSON.stringify(post)
         return jsonData;
     }catch(ex){
-        console.log("Failed to execute board"+ex)
+        console.log("Failed to execute myPosts"+ex)
         await client.query("ROLLBACK")
     }finally{
        // await client.end()
@@ -522,7 +522,7 @@ async function postsWithMyComment(board_type='bulletin',endPostId=-1,category_id
         var jsonData = JSON.stringify(post)
         return jsonData;
     }catch(ex){
-        console.log("Failed to execute board"+ex)
+        console.log("Failed to execute postsWithMyComment"+ex)
         await client.query("ROLLBACK")
     }finally{
        // await client.end()
