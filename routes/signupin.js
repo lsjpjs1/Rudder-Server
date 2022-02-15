@@ -392,9 +392,9 @@ router.post("/validationToken",async function(req,res){
     const {token} = req.body
     console.log(token)
     const isTokenValid = await decodeToken(token)
-    if (isTokenValid) {
-        userRecord.insertUserActivity(user_info_id,"login")
-    }
+    // if (isTokenValid) {
+    //     userRecord.insertUserActivity(user_info_id,"login")
+    // }
     res.send(JSON.stringify({results:{isTokenValid:isTokenValid}}))
     
 });

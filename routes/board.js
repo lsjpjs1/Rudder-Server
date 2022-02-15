@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 process.env.TZ='Asia/Tokyo';
 const client = require("./database");
-
+const userRecord = require("./userrecord")
 const jwt = require('jsonwebtoken')
 require('dotenv').config({path:'./.env'});
 const SECRET_KEY = process.env.JWT_SECRET
