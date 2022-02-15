@@ -276,7 +276,7 @@ router.post("/addComment",async function(req,res){
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
         await addComment(temp.user_id,post_id, comment_body,status,group_num).then(res.send(JSON.stringify({results:{isSuccess:true}})))
-        userRecord.insertUserActivity(user_info_id,"comment")
+        userRecord.insertUserActivity(temp.user_info_id,"comment")
         
     }else{
         res.send(JSON.stringify({results:{isSuccess:false}}))

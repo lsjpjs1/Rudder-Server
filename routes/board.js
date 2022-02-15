@@ -1126,7 +1126,7 @@ router.post("/addPost",async function(req,res){
         const videoIdList=getVideoIdList(post_body)
         console.log(imageInfoList)
         const post_id = await addPost(board_type,post_title,post_body,temp.user_id,imageInfoList,videoIdList,temp.school_id,category_id)
-        userRecord.insertUserActivity(user_info_id,"post")
+        userRecord.insertUserActivity(temp.user_info_id,"post")
         res.send(JSON.stringify({results:{isSuccess:true,post_id:post_id}}))
         
     }else{
