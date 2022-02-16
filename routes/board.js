@@ -315,6 +315,109 @@ async function renderPost(board_type='bulletin',endPostId=-1,category_id=-1,user
     }
 }
 
+router.post("/postFromPostId",async function(req,res){
+    
+    const {token,postId} = req.body; 
+    
+    if(tk.decodeToken(token)){
+        const tmp = jwt.verify(token,SECRET_KEY)
+        var jsonData = await postFromPostId(postId,tmp.user_info_id,tmp.user_id);
+        
+        res.send(jsonData);
+    }
+    
+})
+
+async function postFromPostId(postId,user_info_id,user_id){
+    try{
+        await client.query("BEGIN");
+        var baseQuery = "SELECT b.*,ui.user_info_id,ui.user_nickname,ui.user_profile_image_id,c.*,string_agg(DISTINCT file_name, ',') as image_names from \
+        (select left_join_res.* from \
+            (select b.*,bl.user_id as like_user_id from \
+                board as b left join \
+                (select * from board_like where user_id=$1) as bl \
+                on b.post_id = bl.post_id order by b.post_id) as left_join_res) as b \
+                left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on b.user_id = ui.user_id \
+                left join board_type as bt on b.board_type_id = bt.board_type_id \
+                left join category as c on b.category_id = c.category_id \
+                left join board_image as b_image on b.post_id = b_image.post_id \
+                group by ui.user_info_id,ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit\
+                having b.post_id = $2"
+        const results = await client.query(baseQuery,[user_id,postId])
+
+        
+
+            var post = new Array()
+            var data = new Object()
+            console.log(results.rows)
+            if (results.rows.length < 1){
+                return JSON.stringify(post)
+            }
+            data.post_id = results.rows[0].post_id
+            if(results.rows[0].user_nickname==null){
+                data.user_id = results.rows[0].user_id.substr(0,1)+'******'
+            }else{
+                data.user_id = results.rows[0].user_nickname.substr(0,1)+'******'
+                if (results.rows[0].user_nickname == "Rudder"){
+                    data.user_id = "Rudder"
+                }
+            }
+            data.user_info_id = results.rows[0].user_info_id
+            data.post_body = results.rows[0].post_body
+            data.post_title = results.rows[0].post_title
+            data.post_time = results.rows[0].post_time
+            data.comment_count = results.rows[0].comment_count
+            data.like_count = results.rows[0].like_count
+            data.post_view = results.rows[0].post_view
+            data.category_id = results.rows[0].category_id
+            if (data.category_id == null || typeof data.category_id=='undefined'){
+                data.category_id = 1
+            }
+            data.category_name = results.rows[0].category_name
+            if (data.category_name == null || typeof data.category_name=='undefined'){
+                data.category_name = "Random"
+            }
+            data.is_delete = results.rows[0].is_delete
+            data.imageUrls = new Array()
+            if(results.rows[0].image_names!=null){
+                for(image_name of results.rows[0].image_names.split(',')){
+                    data.imageUrls.push(process.env.CLOUDFRONT_URL+image_name)
+                }
+            }   
+            if(results.rows[0].like_user_id==null){
+                data.isLiked = false
+            }else{
+                data.isLiked = true
+            }
+            data.isMine=false
+            if(results.rows[0].user_id==user_id){
+                data.isMine=true
+            }
+
+            data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
+            if (results.rows[0].user_profile_image_id != null){
+                data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[0].user_profile_image_id
+            }
+
+            if (data.user_id == "Rudder"){
+                data.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/rudder_admin_profile_image'
+            }
+
+            if (data.is_delete){
+                return JSON.stringify(post)
+            }
+        post.push(data)
+        var jsonData = JSON.stringify(post)
+        return jsonData;
+    }catch(ex){
+        console.log("Failed to execute board"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
 router.post("/myPosts",async function(req,res){
     console.log("myPosts is called")
     //offset : int = 0,1,2,3...... 0페이지,1페이지,2페이지,3페이지....  default = 0
