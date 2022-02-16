@@ -65,6 +65,9 @@ module.exports.notificationFromToken = async function (os, notification_token,no
                             'title': '',
                             'body': notification_message
                             
+                        },
+                        'data': {
+                            payload
                         }
                     }
                     }
