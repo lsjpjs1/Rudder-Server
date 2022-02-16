@@ -125,9 +125,9 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
           room.postMessageRoomId = result.post_message_room_id
           room.messageSendTime = result.message_send_time
           room.postMessageBody = result.post_message_body
-          room.userId = result.target_user_id
+          room.userId = result.target_user_id.substr(0,1)+'******'
           if (result.target_user_nickname != null){
-            room.userId = result.target_user_nickname
+            room.userId = result.target_user_nickname.substr(0,1)+'******'
           }
           
 
