@@ -5,7 +5,7 @@ process.env.TZ = 'Asia/Tokyo'
 const request = require('request')
 const apn = require('apn')
 
-module.exports.notificationFromToken = async function (os, notification_token,body) {
+module.exports.notificationFromToken = async function (os, notification_token,notification_message,payload) {
     if (typeof os != "undefined" && typeof notification_token != "undefined") {
         console.log(__dirname.toString())
         var production
@@ -37,7 +37,7 @@ module.exports.notificationFromToken = async function (os, notification_token,bo
             // 메시지가 도착했을 때 나는 소리.
             note.sound = "ping.aiff";
             // 메시지 내용.
-            note.alert = body;
+            note.alert = notification_message;
             // 누가 보냈는지 여부.
             note.payload = { "messageFrom": "minhoServer" };
             // ios app 번들 명.
@@ -63,7 +63,7 @@ module.exports.notificationFromToken = async function (os, notification_token,bo
                         'to': notification_token,
                         'notification': {
                             'title': '',
-                            'body': body
+                            'body': notification_message
                             
                         }
                     }
