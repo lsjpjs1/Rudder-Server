@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 process.env.TZ='Asia/Tokyo'
 const client = require("./database");
-
+const userRecord = require("./userrecord")
 const jwt = require('jsonwebtoken')
 require('dotenv').config({path:'./.env'});
 const SECRET_KEY = process.env.JWT_SECRET
@@ -146,6 +146,96 @@ async function editComment(comment_body,comment_id){
     }
 }
 
+async function myComments(user_id,page){
+    try{
+        const offset = page * 20
+        await client.query("BEGIN")
+        const results = await client.query("\
+        select left_join_res.*,bcl.user_id as like_user_id \
+        from \
+            (\
+                SELECT bcn.*,ui.user_nickname,ui.user_profile_image_id,ui.user_info_id \
+                from \
+                    board_comment as bcn \
+                left join \
+                    (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui \
+                on \
+                    bcn.user_id = ui.user_id \
+                where \
+                    ui.user_id = $1\
+            ) as left_join_res \
+        left join \
+            (\
+                select * from board_comment_like where user_id = $1\
+            ) as bcl \
+        on \
+            left_join_res.comment_id = bcl.comment_id \
+        where \
+            is_delete=false order by post_time desc \
+        limit 20 \
+        offset $2",[user_id,offset])
+        var comments = new Array()
+        for(var i=0;i<results.rows.length;i++){
+            var currentComment  = new Object()
+            if(results.rows[i].user_nickname==null){
+                currentComment.user_id = results.rows[i].user_id.substr(0,1)+'******'
+            }else{
+                currentComment.user_id = results.rows[i].user_nickname.substr(0,1)+'******'
+                if (results.rows[i].user_nickname == "Rudder"){
+                    currentComment.user_id = "Rudder"
+                }
+            }
+            currentComment.comment_id = results.rows[i].comment_id
+            currentComment.comment_body = results.rows[i].comment_body
+            currentComment.post_time = results.rows[i].post_time
+            currentComment.like_count =results.rows[i].like_count
+            currentComment.user_info_id = results.rows[i].user_info_id
+
+            currentComment.status =results.rows[i].status
+            currentComment.order_in_group=results.rows[i].order_in_group
+            currentComment.group_num=results.rows[i].group_num
+            currentComment.is_delete = results.rows[i].is_delete
+            currentComment.isMine=false
+            if(user_id==results.rows[i].user_id)currentComment.isMine=true
+            currentComment.isLiked=false
+            if(user_id==results.rows[i].like_user_id)currentComment.isLiked=true
+
+            
+            currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
+            if (results.rows[i].user_profile_image_id != null){
+                currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+results.rows[i].user_profile_image_id
+            }
+            if (currentComment.user_id == "Rudder"){
+                currentComment.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/rudder_admin_profile_image'
+            }
+
+
+            comments.push(currentComment)
+        }
+        return comments;
+    }catch(ex){
+        console.log("Failed to execute commentRender"+ex)
+        await client.query("ROLLBACK")
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+
+router.post("/myComments",async function(req,res){
+    console.log("myComments is called")
+    const {token,page} = req.body; 
+    if(tk.decodeToken(token)){
+        var decodedToken = jwt.verify(token,SECRET_KEY)
+        var comments=await myComments(decodedToken.user_id,page);
+        var jsonData=JSON.stringify({results:comments})
+        res.send(jsonData);
+    }else{
+        res.send('error')
+    }
+})
+
 router.post("/editComment",async function(req,res){
     console.log("editComment is called") 
     const {comment_body,comment_id,token}=req.body
@@ -186,6 +276,7 @@ router.post("/addComment",async function(req,res){
     if(tk.decodeToken(token)){
         var temp = jwt.verify(token,SECRET_KEY)
         await addComment(temp.user_id,post_id, comment_body,status,group_num).then(res.send(JSON.stringify({results:{isSuccess:true}})))
+        userRecord.insertUserActivity(temp.user_info_id,"comment")
         
     }else{
         res.send(JSON.stringify({results:{isSuccess:false}}))

@@ -5,6 +5,7 @@ process.env.TZ='Asia/Tokyo'
 const client = require("./database");
 const tk = require("./tokenhandle");
 const nodemailer = require('nodemailer');
+const userRecord = require("./userrecord")
 const smtpTransport = nodemailer.createTransport({
     service: "Gmail",
     auth: {
@@ -391,8 +392,13 @@ router.post("/validationToken",async function(req,res){
     const {token} = req.body
     console.log(token)
     const isTokenValid = await decodeToken(token)
-    res.send(JSON.stringify({results:{isTokenValid:isTokenValid}}))
     
+    
+    res.send(JSON.stringify({results:{isTokenValid:isTokenValid}}))
+    if (isTokenValid) {
+        const user_info_id = jwt.verify(token,SECRET_KEY).user_info_id
+        userRecord.insertUserActivity(user_info_id,"login")
+    }
 });
 
 
@@ -453,7 +459,7 @@ router.post('/loginJWT', async function(req,res){
             //let {JWT_SECRET} = router.settings
             let payload = {user_id:user_id,user_info_id:user_info_id,school_id:school_id}
             let options = {}
-
+            
             jwt.sign(payload, SECRET_KEY, options, (err, token) => {
                 res.send(JSON.stringify({
                     results:{
@@ -463,6 +469,7 @@ router.post('/loginJWT', async function(req,res){
                     }
                 }))
             })
+            userRecord.insertUserActivity(user_info_id,"login")
         }else{
             res.send(JSON.stringify({
                 results:{

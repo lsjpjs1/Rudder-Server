@@ -9,7 +9,33 @@ const notification = require("./notification")
 async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBody){
     try{
       await client.query("BEGIN")
-      await client.query("insert into post_message values (default,$1,$2,default,$3,default)",[send_user_info_id,receive_user_info_id,messageBody])
+      const post_message_room = await client.query("\
+      insert into post_message_room \
+      select where not exists (SELECT * from post_message_room_member pmrm1 \
+        left join post_message_room_member pmrm2 on \
+        pmrm1.post_message_room_id = pmrm2.post_message_room_id \
+        where (pmrm1.user_info_id = $1 and pmrm2.user_info_id = $2) or (pmrm1.user_info_id = $2 and pmrm2.user_info_id = $1) ) returning *",[send_user_info_id,receive_user_info_id])
+
+      var post_message_room_id
+
+      if(typeof post_message_room.rows[0] != "undefined"){
+        console.log("hit1")
+        post_message_room_id = post_message_room.rows[0].post_message_room_id
+        
+        await client.query("insert into post_message_room_member values (default,$1,$2)",[post_message_room.rows[0].post_message_room_id,send_user_info_id])
+        await client.query("insert into post_message_room_member values (default,$1,$2)",[post_message_room.rows[0].post_message_room_id,receive_user_info_id])
+      }else{
+        console.log("hit2")
+        const res= await client.query("SELECT * from post_message_room_member pmrm1 \
+        left join post_message_room_member pmrm2 on \
+        pmrm1.post_message_room_id = pmrm2.post_message_room_id \
+        where (pmrm1.user_info_id = $1 and pmrm2.user_info_id = $2) or (pmrm1.user_info_id = $2 and pmrm2.user_info_id = $1)",[send_user_info_id,receive_user_info_id])
+        console.log(res.rows[0].post_message_room_id)
+        post_message_room_id = res.rows[0].post_message_room_id
+        
+      }
+      
+      await client.query("insert into post_message values (default,$1,$2,default,$3,default,$4)",[send_user_info_id,receive_user_info_id,messageBody,post_message_room_id])
       await client.query("COMMIT")
       const result = await client.query("select * from user_info where user_info_id = $1",[receive_user_info_id])
       const os = result.rows[0].os
@@ -78,39 +104,40 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
     }
   });
 
-  async function getMyMessages(user_info_id){
+  async function getMyMessageRooms(user_info_id){
     try{
       await client.query("BEGIN")
       const results = await client.query("\
-        select msg.*, receive_ui.user_nickname as receive_user_nickname, send_ui.user_nickname as send_user_nickname \
-        from post_message msg \
-        left join \
-          user_info receive_ui \
-        on receive_ui.user_info_id = msg.receive_user_info_id \
-        left join \
-          user_info send_ui \
-        on send_ui.user_info_id = msg.send_user_info_id \
-        where send_user_info_id = $1 or receive_user_info_id = $1 \
-        order by msg.message_send_time desc \
-        ",[user_info_id])
-      var messages = new Array()
+      select * \
+      from \
+        (select distinct on (pmr.post_message_room_id) *,(select user_nickname from user_info where user_info_id = (select user_info_id from post_message_room_member where post_message_room_id = pmr.post_message_room_id and user_info_id != pmrm.user_info_id) ) as target_user_nickname \
+        from post_message_room pmr \
+        left join post_message_room_member pmrm on pmrm.post_message_room_id = pmr.post_message_room_id \
+        left join post_message pm on pm.post_message_room_id = pmr.post_message_room_id \
+        where \
+        pmrm.user_info_id = $1 \
+        order by pmr.post_message_room_id,pm.post_message_id desc \
+        ) as res \
+      order by res.post_message_id desc ",[user_info_id])
+      var rooms = new Array()
       for(result of results.rows){
-          var message = new Object()
-          message.receiveUserInfoId = result.receive_user_info_id
-          message.sendUserInfoId = result.send_user_info_id
-          message.messageBody = result.post_message_body
-          message.isRead = result.is_read
-          message.messageSendTime = result.message_send_time
-          message.postMessageId = result.post_message_id
-          message.sendUserNickname = result.send_user_nickname
-          message.receiveUserNickname = result.receive_user_nickname
+          var room = new Object()
+          room.postMessageRoomId = result.post_message_room_id
+          room.messageSendTime = result.message_send_time
+          room.postMessageBody = result.post_message_body
+          room.userId = result.target_user_id
+          if (result.target_user_nickname != null){
+            room.userId = result.target_user_nickname
+          }
+          
 
-          messages.push(message)
+
+          rooms.push(room)
       }
-      return messages
+      return rooms
 
     }catch(ex){
-        console.log("Failed to execute getMyMessages"+ex)
+        console.log("Failed to execute getMyMessageRooms"+ex)
         await client.query("ROLLBACK")
         return false
     }finally{
@@ -119,13 +146,71 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
     }
   }
 
-  router.post("/getMyMessages",async function(req,res){
+  
+
+  router.post("/getMyMessageRooms",async function(req,res){
   
     
     const {token} = req.body
     if(tk.decodeToken(token)){
       const tmp = jwt.verify(token,SECRET_KEY)
-      const messages = await getMyMessages(tmp.user_info_id)
+      const messages = await getMyMessageRooms(tmp.user_info_id)
+      if (messages){
+        res.send(JSON.stringify({results:{isSuccess:true,error:'',rooms:messages}}))
+      }else{
+        res.send(JSON.stringify({results:{isSuccess:false,error:'database',rooms:[]}}))
+      }
+      
+      
+      
+    }
+  });
+
+
+
+
+
+async function getMessagesByRoom(user_info_id,postMessageRoomId){
+    try{
+      await client.query("BEGIN")
+      const results = await client.query("\
+      select *, send_user_info_id = $1 as is_sender \
+      from post_message \
+      where \
+      post_message_room_id = $2 \
+      order by \
+      post_message_id desc ",[user_info_id,postMessageRoomId])
+      var messages = new Array()
+      for(result of results.rows){
+          var message = new Object()
+          message.postMessageId = result.post_message_id
+          message.sendUserInfoId = result.send_user_info_id
+          message.receiveUserInfoId = result.receive_user_info_id
+          message.messageSendTime = result.message_send_time
+          message.postMessageBody = result.post_message_body
+          message.isRead = result.is_read
+          message.isSender = result.is_sender
+          messages.push(message)
+      }
+      return messages
+
+    }catch(ex){
+        console.log("Failed to execute getMyMessageRooms"+ex)
+        await client.query("ROLLBACK")
+        return false
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+  }
+
+  router.post("/getMessagesByRoom",async function(req,res){
+  
+    
+    const {token,postMessageRoomId} = req.body
+    if(tk.decodeToken(token)){
+      const tmp = jwt.verify(token,SECRET_KEY)
+      const messages = await getMessagesByRoom(tmp.user_info_id,postMessageRoomId)
       if (messages){
         res.send(JSON.stringify({results:{isSuccess:true,error:'',messages:messages}}))
       }else{
