@@ -351,7 +351,7 @@ async function postFromPostId(postId,user_info_id,user_id){
             var data = new Object()
             console.log(results.rows)
             if (results.rows.length < 1){
-                return JSON.stringify({post:data,isSuccess:false,error:"not exist"})
+                return JSON.stringify({results:{post:data,isSuccess:false,error:"not exist"}})
             }
             data.post_id = results.rows[0].post_id
             if(results.rows[0].user_nickname==null){
@@ -404,9 +404,9 @@ async function postFromPostId(postId,user_info_id,user_id){
             }
 
             if (data.is_delete){
-                return JSON.stringify({post:data,isSuccess:false,error:"delete"})
+                return JSON.stringify({results:{post:data,isSuccess:false,error:"delete"}})
             }
-        var jsonData = JSON.stringify({post:data,isSuccess:true,error:""})
+        var jsonData = JSON.stringify({results:{post:data,isSuccess:true,error:""}})
         return jsonData;
     }catch(ex){
         console.log("Failed to execute board"+ex)
