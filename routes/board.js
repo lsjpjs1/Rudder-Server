@@ -512,8 +512,8 @@ async function myPosts(board_type='bulletin',endPostId=-1,category_id=-1,user_id
 
             post.push(data)
         }
-        var jsonData = JSON.stringify(post)
-        return jsonData;
+        
+        return post;
     }catch(ex){
         console.log("Failed to execute myPosts"+ex)
         await client.query("ROLLBACK")
