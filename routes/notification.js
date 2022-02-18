@@ -106,61 +106,10 @@ const saveNotificationInfo = async function(notificationType,user_info_id,commen
 }
 
 
-async function getNotifications(user_info_id,postMessageRoomId){
-    try{
-      await client.query("BEGIN")
-      const results = await client.query("\
-      select *, send_user_info_id = $1 as is_sender \
-      from post_message \
-      where \
-      post_message_room_id = $2 \
-      order by \
-      post_message_id desc ",[user_info_id,postMessageRoomId])
-      var messages = new Array()
-      for(result of results.rows){
-          var message = new Object()
-          message.postMessageId = result.post_message_id
-          message.sendUserInfoId = result.send_user_info_id
-          message.receiveUserInfoId = result.receive_user_info_id
-          message.messageSendTime = result.message_send_time
-          message.postMessageBody = result.post_message_body
-          message.isRead = result.is_read
-          message.isSender = result.is_sender
-          messages.push(message)
-      }
-      return messages
 
-    }catch(ex){
-        console.log("Failed to execute getMyMessageRooms"+ex)
-        await client.query("ROLLBACK")
-        return false
-    }finally{
-       // await client.end()
-        console.log("Cleaned.") 
-    }
-  }
-
-  router.post("/getNotifications",async function(req,res){
-  
-    
-    const {token,postMessageRoomId} = req.body
-    if(tk.decodeToken(token)){
-      const tmp = jwt.verify(token,SECRET_KEY)
-      const messages = await getNotifications(tmp.user_info_id,postMessageRoomId)
-      if (messages){
-        res.send(JSON.stringify({results:{isSuccess:true,error:'',messages:messages}}))
-      }else{
-        res.send(JSON.stringify({results:{isSuccess:false,error:'database',messages:[]}}))
-      }
-      
-      
-      
-    }
-  });
 
 module.exports = {
     notificationFromToken,
-    router,
     saveNotificationInfo,
 }
 
