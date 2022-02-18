@@ -4,8 +4,11 @@ const jwt = require('jsonwebtoken')
 process.env.TZ = 'Asia/Tokyo'
 const request = require('request')
 const apn = require('apn')
+var express = require('express');
+const client = require('./database');
+var router = express.Router();
 
-module.exports.notificationFromToken = async function (os, notification_token,body) {
+const notificationFromToken = async function (os, notification_token,notification_message) {
     if (typeof os != "undefined" && typeof notification_token != "undefined") {
         console.log(__dirname.toString())
         var production
@@ -37,7 +40,7 @@ module.exports.notificationFromToken = async function (os, notification_token,bo
             // 메시지가 도착했을 때 나는 소리.
             note.sound = "ping.aiff";
             // 메시지 내용.
-            note.alert = body;
+            note.alert = notification_message;
             // 누가 보냈는지 여부.
             note.payload = { "messageFrom": "minhoServer" };
             // ios app 번들 명.
@@ -68,7 +71,7 @@ module.exports.notificationFromToken = async function (os, notification_token,bo
                         'to': notification_token,
                         'notification': {
                             'title': '',
-                            'body': body
+                            'body': notification_message
                             
                         }
                     }
@@ -87,4 +90,33 @@ module.exports.notificationFromToken = async function (os, notification_token,bo
         }
     }
 }
+
+
+const saveNotificationInfo = async function(notificationType,user_info_id,commentId,postMessageId){
+    try {
+        await client.query("BEGIN")
+    var baseQuery
+    if (notificationType=="comment"){
+        baseQuery = "insert into notification values (default,1,default,$1,null,$2)"
+        await client.query(baseQuery,[commentId,user_info_id])
+    } else if (notificationType=="postMessage") {
+        baseQuery = "insert into notification values (default,2,default,null,$1,$2)"
+        await client.query(baseQuery,[postMessageId,user_info_id])
+    }
+    await client.query("COMMIT")
+    } catch (error) {
+        console.log("Failed to execute saveNotificationInfo"+error)
+    }
+    
+}
+
+
+
+
+module.exports = {
+    notificationFromToken,
+    saveNotificationInfo,
+}
+
+
 

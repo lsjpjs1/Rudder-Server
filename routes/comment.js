@@ -71,21 +71,30 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
         var queryResult
         var os
         var notification_token
+        var insertResult
+        var commentTime
         if(status=="parent"){
             queryResult = await client.query("select count(c.count), \
             (select notification_token from user_info where user_id = (select user_id from board where post_id = $1 )), \
-            (select os from user_info where user_id = (select user_id from board where post_id = $1 )) from (SELECT count(comment_id) \
+            (select os from user_info where user_id = (select user_id from board where post_id = $1 )) from (SELECT count(comment_id), \
+            (select user_info_id from user_info where user_id = (select user_id from board where post_id = $1 )) \
             from board_comment where post_id = $1 group by group_num) as c",[post_id])
-            await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,0,$5)",[post_id,user_id,comment_body,status,queryResult.rows[0].count])
+            insertResult = await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,0,$5) returning *",[post_id,user_id,comment_body,status,queryResult.rows[0].count])
         }else{
-            queryResult = await client.query("select count(c.count) from (SELECT count(comment_id) from board_comment where post_id = $1 and group_num = $2 group by order_in_group) as c",[post_id,group_num])
-            await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,$5,$6)",[post_id,user_id,comment_body,status,queryResult.rows[0].count,group_num])
+            queryResult= await client.query("\
+            select count(c.count), \
+            (select notification_token from user_info where user_id = (select user_id from board_comment where post_id = $1 and group_num=$2 and order_in_group=0)), \
+            (select os from user_info where user_id = (select user_id from board_comment where post_id = $1 and group_num=$2 and order_in_group=0)), \
+            (select user_info_id from user_info where user_id = (select user_id from board_comment where post_id = $1 and group_num=$2 and order_in_group=0)) \
+            from (SELECT count(comment_id) from board_comment where post_id = $1 and group_num = $2 group by order_in_group) as c",[post_id,group_num])
+            insertResult =await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,$5,$6) returning *",[post_id,user_id,comment_body,status,queryResult.rows[0].count,group_num])
         }
         os = queryResult.rows[0].os
         notification_token = queryResult.rows[0].notification_token
         await notification.notificationFromToken(os,notification_token,comment_body) // undefined check는 notificationFromToken에서 함
         await client.query("update board set comment_count = comment_count+1 where post_id=($1)",[post_id])
         await client.query("COMMIT")
+        await notification.saveNotificationInfo("comment",queryResult.rows[0].user_info_id,insertResult.rows[0].comment_id)
     }catch(ex){
         console.log("Failed to execute addComment"+ex)
         await client.query("ROLLBACK")
