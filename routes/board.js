@@ -533,7 +533,7 @@ router.post("/postsWithMyComment",async function(req,res){
         const tmp = jwt.verify(token,SECRET_KEY)
         var jsonData = await postsWithMyComment("bulletin",-1,-1,tmp.user_id,tmp.school_id,"",tmp.user_info_id,offset);
         
-        res.send(jsonData);
+        res.send(JSON.stringify({results:{isSuccess:true,error:'',posts:jsonData}}))
     }
     
 })
@@ -620,7 +620,7 @@ async function postsWithMyComment(board_type='bulletin',endPostId=-1,category_id
 
             post.push(data)
         }
-        var jsonData = JSON.stringify(post)
+        var jsonData = post
         return jsonData;
     }catch(ex){
         console.log("Failed to execute postsWithMyComment"+ex)
