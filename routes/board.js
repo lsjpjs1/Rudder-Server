@@ -426,8 +426,7 @@ router.post("/myPosts",async function(req,res){
     if(tk.decodeToken(token)){
         const tmp = jwt.verify(token,SECRET_KEY)
         var jsonData = await myPosts("bulletin",-1,-1,tmp.user_id,tmp.school_id,"",tmp.user_info_id,offset);
-        
-        res.send(jsonData);
+        res.send(JSON.stringify({results:{isSuccess:true,error:'',posts:jsonData}}))
     }
     
 })
