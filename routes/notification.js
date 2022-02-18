@@ -87,17 +87,16 @@ const notificationFromToken = async function (os, notification_token,notificatio
 }
 
 
-const saveNotificationInfo = async function(notificationType,commentId,postMessageId){
+const saveNotificationInfo = async function(notificationType,user_info_id,commentId,postMessageId){
     try {
-        console.log(notificationType,commentId,postMessageId)
         await client.query("BEGIN")
     var baseQuery
     if (notificationType=="comment"){
-        baseQuery = "insert into notification values (default,1,default,$1,null)"
-        await client.query(baseQuery,[commentId])
+        baseQuery = "insert into notification values (default,1,default,$1,null,$2)"
+        await client.query(baseQuery,[commentId,user_info_id])
     } else if (notificationType=="postMessage") {
-        baseQuery = "insert into notification values (default,2,default,null,$1)"
-        await client.query(baseQuery,[postMessageId])
+        baseQuery = "insert into notification values (default,2,default,null,$1,$2)"
+        await client.query(baseQuery,[postMessageId,user_info_id])
     }
     await client.query("COMMIT")
     } catch (error) {
@@ -106,6 +105,58 @@ const saveNotificationInfo = async function(notificationType,commentId,postMessa
     
 }
 
+
+async function getNotifications(user_info_id,postMessageRoomId){
+    try{
+      await client.query("BEGIN")
+      const results = await client.query("\
+      select *, send_user_info_id = $1 as is_sender \
+      from post_message \
+      where \
+      post_message_room_id = $2 \
+      order by \
+      post_message_id desc ",[user_info_id,postMessageRoomId])
+      var messages = new Array()
+      for(result of results.rows){
+          var message = new Object()
+          message.postMessageId = result.post_message_id
+          message.sendUserInfoId = result.send_user_info_id
+          message.receiveUserInfoId = result.receive_user_info_id
+          message.messageSendTime = result.message_send_time
+          message.postMessageBody = result.post_message_body
+          message.isRead = result.is_read
+          message.isSender = result.is_sender
+          messages.push(message)
+      }
+      return messages
+
+    }catch(ex){
+        console.log("Failed to execute getMyMessageRooms"+ex)
+        await client.query("ROLLBACK")
+        return false
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+  }
+
+  router.post("/getNotifications",async function(req,res){
+  
+    
+    const {token,postMessageRoomId} = req.body
+    if(tk.decodeToken(token)){
+      const tmp = jwt.verify(token,SECRET_KEY)
+      const messages = await getNotifications(tmp.user_info_id,postMessageRoomId)
+      if (messages){
+        res.send(JSON.stringify({results:{isSuccess:true,error:'',messages:messages}}))
+      }else{
+        res.send(JSON.stringify({results:{isSuccess:false,error:'database',messages:[]}}))
+      }
+      
+      
+      
+    }
+  });
 
 module.exports = {
     notificationFromToken,
