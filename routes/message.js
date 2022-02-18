@@ -35,13 +35,13 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
         
       }
       
-      await client.query("insert into post_message values (default,$1,$2,default,$3,default,$4)",[send_user_info_id,receive_user_info_id,messageBody,post_message_room_id])
+      const insertResult = await client.query("insert into post_message values (default,$1,$2,default,$3,default,$4) returning *",[send_user_info_id,receive_user_info_id,messageBody,post_message_room_id])
       await client.query("COMMIT")
       const result = await client.query("select * from user_info where user_info_id = $1",[receive_user_info_id])
       const os = result.rows[0].os
       const notification_token = result.rows[0].notification_token
-      const payload = {}
-      await notification.notificationFromToken(os,notification_token,"New message!",payload)
+      await notification.notificationFromToken(os,notification_token,"New message!")
+      await notification.saveNotificationInfo("postMessage",insertResult.rows[0].post_message_id)
       return true
     }catch(ex){
         console.log("Failed to execute sendPostMessage"+ex)

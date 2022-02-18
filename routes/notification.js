@@ -4,8 +4,11 @@ const jwt = require('jsonwebtoken')
 process.env.TZ = 'Asia/Tokyo'
 const request = require('request')
 const apn = require('apn')
+var express = require('express');
+const client = require('./database');
+var router = express.Router();
 
-module.exports.notificationFromToken = async function (os, notification_token,notification_message,payload) {
+const notificationFromToken = async function (os, notification_token,notification_message) {
     if (typeof os != "undefined" && typeof notification_token != "undefined") {
         console.log(__dirname.toString())
         var production
@@ -65,9 +68,6 @@ module.exports.notificationFromToken = async function (os, notification_token,no
                             'title': '',
                             'body': notification_message
                             
-                        },
-                        'data': {
-                            payload
                         }
                     }
                     }
@@ -85,4 +85,32 @@ module.exports.notificationFromToken = async function (os, notification_token,no
         }
     }
 }
+
+
+const saveNotificationInfo = async function(notificationType,commentId,postMessageId){
+    try {
+        await client.query("BEGIN")
+    var baseQuery
+    if (notificationType=="comment"){
+        baseQuery = "insert into notification values (default,1,default,$1,null)"
+        await client.query(baseQuery,[commentId])
+    } else if (notificationType=="postMessage") {
+        baseQuery = "insert into notification values (default,1,default,null,$1)"
+        await client.query(baseQuery,[postMessageId])
+    }
+    await client.query("COMMIT")
+    } catch (error) {
+        console.log("Failed to execute saveNotificationInfo"+ex)
+    }
+    
+}
+
+
+module.exports = {
+    notificationFromToken,
+    router,
+    saveNotificationInfo,
+}
+
+
 
