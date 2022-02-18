@@ -41,7 +41,7 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
       const os = result.rows[0].os
       const notification_token = result.rows[0].notification_token
       await notification.notificationFromToken(os,notification_token,"New message!")
-      await notification.saveNotificationInfo("postMessage",insertResult.rows[0].post_message_id)
+      await notification.saveNotificationInfo("postMessage",undefined,insertResult.rows[0].post_message_id)
       return true
     }catch(ex){
         console.log("Failed to execute sendPostMessage"+ex)

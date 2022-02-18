@@ -89,18 +89,19 @@ const notificationFromToken = async function (os, notification_token,notificatio
 
 const saveNotificationInfo = async function(notificationType,commentId,postMessageId){
     try {
+        console.log(notificationType,commentId,postMessageId)
         await client.query("BEGIN")
     var baseQuery
     if (notificationType=="comment"){
         baseQuery = "insert into notification values (default,1,default,$1,null)"
         await client.query(baseQuery,[commentId])
     } else if (notificationType=="postMessage") {
-        baseQuery = "insert into notification values (default,1,default,null,$1)"
+        baseQuery = "insert into notification values (default,2,default,null,$1)"
         await client.query(baseQuery,[postMessageId])
     }
     await client.query("COMMIT")
     } catch (error) {
-        console.log("Failed to execute saveNotificationInfo"+ex)
+        console.log("Failed to execute saveNotificationInfo"+error)
     }
     
 }

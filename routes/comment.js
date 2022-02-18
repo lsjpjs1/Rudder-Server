@@ -88,11 +88,17 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
             insertResult =await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,$5,$6) returning *",[post_id,user_id,comment_body,status,queryResult.rows[0].count,group_num])
         }
         os = queryResult.rows[0].os
+        console.log(1)
         notification_token = queryResult.rows[0].notification_token
+        console.log(2)
         await notification.notificationFromToken(os,notification_token,comment_body) // undefined check는 notificationFromToken에서 함
-        await notification.saveNotificationInfo("comment",insertResult.rows[0].comment_id)
+        console.log(3)
+        
+        console.log(4)
         await client.query("update board set comment_count = comment_count+1 where post_id=($1)",[post_id])
+        console.log(5)
         await client.query("COMMIT")
+        await notification.saveNotificationInfo("comment",insertResult.rows[0].comment_id)
     }catch(ex){
         console.log("Failed to execute addComment"+ex)
         await client.query("ROLLBACK")
