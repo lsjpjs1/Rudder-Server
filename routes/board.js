@@ -450,7 +450,7 @@ async function myPosts(board_type='bulletin',endPostId=-1,category_id=-1,user_id
                 left join (select (select user_id from user_info where user_block.blocked_user_info_id=user_info.user_info_id),user_block.blocked_user_info_id from user_block where user_block.user_info_id = $4) as ub on ub.user_id = b.user_id \
                 group by ui.user_id,ui.user_info_id,ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit,ub.blocked_user_info_id \
                 having b.is_delete = false and ub.blocked_user_info_id is null and b.post_body like '%%'  \
-                and ui.user_info_id = 218 \
+                and ui.user_info_id = $4 \
                 order by post_id desc \
                 limit $3 offset $2",[user_id,offset,POST_NUMBER_IN_ONE_PAGE,user_info_id])
 
