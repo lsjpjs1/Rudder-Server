@@ -111,10 +111,21 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
       const results = await client.query("\
       select * \
       from \
-        (select distinct on (pmr.post_message_room_id) *,(select user_id from user_info where user_info_id = (select user_info_id from post_message_room_member where post_message_room_id = pmr.post_message_room_id and user_info_id != pmrm.user_info_id) ) as target_user_id,(select user_nickname from user_info where user_info_id = (select user_info_id from post_message_room_member where post_message_room_id = pmr.post_message_room_id and user_info_id != pmrm.user_info_id) ) as target_user_nickname \
+        (select distinct on (pmr.post_message_room_id) pmr.*,pm.*,pmrm.*, \
+		 case receiver_ui.user_info_id when $1 then sender_ui.user_id \
+			else receiver_ui.user_id \
+			end, \
+		 case receiver_ui.user_info_id when 218 then sender_ui.user_nickname \
+			else receiver_ui.user_nickname \
+			end , \
+		 case receiver_ui.user_info_id when 218 then (select user_profile_image_id from user_profile where profile_id = sender_ui.profile_id) \
+			else (select user_profile_image_id from user_profile where profile_id = receiver_ui.profile_id) \
+			end \
         from post_message_room pmr \
         left join post_message_room_member pmrm on pmrm.post_message_room_id = pmr.post_message_room_id \
         left join post_message pm on pm.post_message_room_id = pmr.post_message_room_id \
+		left join user_info sender_ui on pm.send_user_info_id = sender_ui.user_info_id \
+		 left join user_info receiver_ui on pm.receive_user_info_id = receiver_ui.user_info_id \
         where \
         pmrm.user_info_id = $1 \
         order by pmr.post_message_room_id,pm.post_message_id desc \
@@ -127,9 +138,13 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
           room.messageSendTime = result.message_send_time
           room.postMessageBody = result.post_message_body
           console.log(result)
-          room.userId = result.target_user_id.substr(0,1)+'******'
-          if (result.target_user_nickname != null){
-            room.userId = result.target_user_nickname.substr(0,1)+'******'
+          room.userId = result.user_id.substr(0,1)+'******'
+          if (result.user_nickname != null){
+            room.userId = result.user_nickname.substr(0,1)+'******'
+          }
+          room.userProfileImageId = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
+          if (result.user_profile_image_id !=null){
+            room.userProfileImageId = process.env.CLOUDFRONT_URL+'profile_image_preview/'+result.user_profile_image_id
           }
           
           
