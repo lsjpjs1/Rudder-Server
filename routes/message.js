@@ -142,9 +142,9 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
           if (result.user_nickname != null){
             room.userId = result.user_nickname.substr(0,1)+'******'
           }
-          room.userProfileImageId = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
+          room.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+'1'
           if (result.user_profile_image_id !=null){
-            room.userProfileImageId = process.env.CLOUDFRONT_URL+'profile_image_preview/'+result.user_profile_image_id
+            room.userProfileImageUrl = process.env.CLOUDFRONT_URL+'profile_image_preview/'+result.user_profile_image_id
           }
           
           
