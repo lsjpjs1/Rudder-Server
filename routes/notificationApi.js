@@ -24,7 +24,7 @@ async function getNotifications(user_info_id){
           var notification = new Object()
           notification.notificationId = result.notification_id
           notification.notificationType = result.notification_type
-          if(result.notification_type == 1){ // 댓글인 경우
+          if(result.notification_type == 1 || result.notification_type == 3){ // 댓글이나 대댓글인 경우
             notification.itemId = result.post_id
             notification.itemBody = result.comment_body
             notification.itemTime = result.post_time
