@@ -40,7 +40,7 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
       const result = await client.query("select * from user_info where user_info_id = $1",[receive_user_info_id])
       const os = result.rows[0].os
       const notification_token = result.rows[0].notification_token
-      await notification.saveNotificationInfo("postMessage",receive_user_info_id,undefined,insertResult.rows[0].post_message_id)
+      await notification.saveNotificationInfo(2,receive_user_info_id,undefined,insertResult.rows[0].post_message_id)
       await notification.notificationFromToken(os,notification_token,"New message!")
       
       return true
