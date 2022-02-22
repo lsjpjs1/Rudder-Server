@@ -55,9 +55,7 @@ app.get("/:name", function(req, res){
     const name = req.params.name;//위의 name과 match되어야함?np
     res.send("Welcome to Minho's web server. You added "+name+" in URL123");
 });
-app.get("/", function(req,res){
-    res.send("Welcome to Minho's node server. This server is for handling Minho's Simple Signup/login App!123");
-});
+
 
 app.use('/signupin',signupinRouter)
 app.use('/addreview',addreviewRouter)
