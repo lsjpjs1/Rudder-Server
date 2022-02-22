@@ -17,13 +17,14 @@ async function getNotifications(user_info_id){
         from notification \
         left join board_comment as bc on bc.comment_id = notification.comment_id \
         left join post_message as pm on pm.post_message_id = notification.post_message_id \
-        where notification.user_info_id = $1",[user_info_id])
+        where notification.user_info_id = $1 \
+        order by notification_id desc",[user_info_id])
       var notifications = new Array()
       for(result of results.rows){
           var notification = new Object()
           notification.notificationId = result.notification_id
           notification.notificationType = result.notification_type
-          if(result.notification_type == 1){ // 댓글인 경우
+          if(result.notification_type == 1 || result.notification_type == 3){ // 댓글이나 대댓글인 경우
             notification.itemId = result.post_id
             notification.itemBody = result.comment_body
             notification.itemTime = result.post_time

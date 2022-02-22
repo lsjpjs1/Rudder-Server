@@ -96,12 +96,16 @@ const saveNotificationInfo = async function(notificationType,user_info_id,commen
     try {
         await client.query("BEGIN")
     var baseQuery
-    if (notificationType=="comment"){
-        baseQuery = "insert into notification values (default,1,default,$1,null,$2)"
-        await client.query(baseQuery,[commentId,user_info_id])
-    } else if (notificationType=="postMessage") {
-        baseQuery = "insert into notification values (default,2,default,null,$1,$2)"
-        await client.query(baseQuery,[postMessageId,user_info_id])
+     // 1 댓글, 2 쪽지, 3 대댓글
+    if (notificationType==1){
+        baseQuery = "insert into notification values (default,$3,default,$1,null,$2)"
+        await client.query(baseQuery,[commentId,user_info_id,notificationType])
+    } else if (notificationType==2) {
+        baseQuery = "insert into notification values (default,$3,default,null,$1,$2)"
+        await client.query(baseQuery,[postMessageId,user_info_id,notificationType])
+    } else if (notificationType==3) {
+        baseQuery = "insert into notification values (default,$3,default,$1,null,$2)"
+        await client.query(baseQuery,[commentId,user_info_id,notificationType])
     }
     await client.query("COMMIT")
     } catch (error) {
