@@ -73,6 +73,7 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
         var notification_token
         var insertResult
         var commentTime
+        var notificationType
         if(status=="parent"){
             queryResult = await client.query("select count(c.count), \
             (select notification_token from user_info where user_id = (select user_id from board where post_id = $1 )), \
@@ -81,6 +82,7 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
             from board_comment where post_id = $1 group by group_num) as c",[post_id])
             insertResult = await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,0,$5) returning *",[post_id,user_id,comment_body,status,queryResult.rows[0].count])
             await notification.saveNotificationInfo(1,queryResult.rows[0].user_info_id,insertResult.rows[0].comment_id)
+            notificationType = 1
         }else{
             queryResult= await client.query("\
             select count(c.count), \
@@ -90,12 +92,13 @@ async function addComment(user_id,post_id, comment_body,status,group_num){
             from (SELECT count(comment_id) from board_comment where post_id = $1 and group_num = $2 group by order_in_group) as c",[post_id,group_num])
             insertResult =await client.query("insert into board_comment values (default, $1, $2, $3, default, 0,$4,$5,$6) returning *",[post_id,user_id,comment_body,status,queryResult.rows[0].count,group_num])
             await notification.saveNotificationInfo(3,queryResult.rows[0].user_info_id,insertResult.rows[0].comment_id)
+            notificationType = 3
         }
         os = queryResult.rows[0].os
         notification_token = queryResult.rows[0].notification_token
         console.log(queryResult.rows[0])
         
-        await notification.notificationFromToken(os,notification_token,comment_body) // undefined check는 notificationFromToken에서 함
+        await notification.notificationFromToken(os,notification_token,comment_body,notificationType) // undefined check는 notificationFromToken에서 함
         await client.query("update board set comment_count = comment_count+1 where post_id=($1)",[post_id])
         await client.query("COMMIT")
         

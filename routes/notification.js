@@ -8,7 +8,18 @@ var express = require('express');
 const client = require('./database');
 var router = express.Router();
 
-const notificationFromToken = async function (os, notification_token,notification_message) {
+function getNotificationTitle(notificationType) {
+    if (notificationType == 1){
+        return "New comment at your post!"
+    } else if (notificationType == 2) {
+        return "New message!"
+    } else if (notificationType == 3){
+        return "New comment at your comment!"
+    }
+}
+
+const notificationFromToken = async function (os, notification_token,notification_message,notificationType) {
+    const title = getNotificationTitle(notificationType)
     if (typeof os != "undefined" && typeof notification_token != "undefined") {
         console.log(__dirname.toString())
         var production
@@ -65,7 +76,7 @@ const notificationFromToken = async function (os, notification_token,notificatio
                     json: {
                         'to': notification_token,
                         'notification': {
-                            'title': '',
+                            'title': title,
                             'body': notification_message
                             
                         }
