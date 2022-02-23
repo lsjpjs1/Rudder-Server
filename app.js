@@ -52,8 +52,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.get("/:name", function(req, res){
-    const name = req.params.name;//위의 name과 match되어야함?np
-    res.send("Welcome to Minho's web server. You added "+name+" in URL123");
+  res.writeHead(301, {
+    Location: 'https://bush-thorn-7ed.notion.site/Rudder-05a628bb03a44097ada829222aec0603'
+  }).end();
 });
 
 
