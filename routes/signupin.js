@@ -68,6 +68,47 @@ async function insertProfile(user_id,profile_body,user_profile_image_id){
 
 }
 
+async function logout(user_info_id){
+    try{
+        await client.query("BEGIN")
+        await client.query("update user_info set os=null,notification_token=null where user_info_id = $1",[user_info_id])
+        await client.query("COMMIT")
+        return true
+    }catch(ex){
+        console.log("Failed to execute signin"+ex)
+        await client.query("ROLLBACK")
+        return false
+    }finally{
+       // await client.end()
+        console.log("Cleaned.") 
+    }
+}
+
+router.post("/logout",async function(req,res){
+
+    const {token} = req.body
+    try {
+        if(tk.decodeToken(token)){
+            var temp = jwt.verify(token,SECRET_KEY)
+            const isSuccess = await logout(temp.user_info_id)
+            if(isSuccess){
+                res.send(JSON.stringify({results:{isSuccess:true}}))
+            } else{
+                res.send(JSON.stringify({results:{isSuccess:false}}))
+            }
+        }else{
+            res.send(JSON.stringify({results:{isSuccess:false}}))
+        }
+    } catch (error) {
+        res.send(JSON.stringify({results:{isSuccess:false}}))
+    }
+    
+    
+
+
+
+});
+
 async function signup(user_id,user_password,email,recommendationCode,school_id,profile_body,user_nickname,user_profile_image_id=1) { 
     try{
        // await client.connect()
