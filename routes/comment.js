@@ -108,7 +108,7 @@ async function addComment(user_id,post_id, comment_body,status,group_num,user_in
         console.log(queryResult.rows[0])
         
         if (flag){
-            const payload = {notificationType:notificationType}
+            const payload = {notificationType:notificationType,itemId:post_id}
             await notification.notificationFromToken(os,notification_token,comment_body,notificationType,payload) // undefined check는 notificationFromToken에서 함 
         }
         

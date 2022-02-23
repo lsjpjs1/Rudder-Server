@@ -42,7 +42,7 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
       const notification_token = result.rows[0].notification_token
       if(receive_user_info_id!=send_user_info_id){ // 나한테 보내는 메시지 아니면
         await notification.saveNotificationInfo(2,receive_user_info_id,undefined,insertResult.rows[0].post_message_id)
-        const payload = {notificationType:2}
+        const payload = {notificationType:2,itemId:post_message_room_id}
         await notification.notificationFromToken(os,notification_token,messageBody,2,payload)
       }
       
