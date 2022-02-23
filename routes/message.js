@@ -120,10 +120,10 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
 		 case receiver_ui.user_info_id when $1 then sender_ui.user_id \
 			else receiver_ui.user_id \
 			end, \
-		 case receiver_ui.user_info_id when 218 then sender_ui.user_nickname \
+		 case receiver_ui.user_info_id when $1 then sender_ui.user_nickname \
 			else receiver_ui.user_nickname \
 			end , \
-		 case receiver_ui.user_info_id when 218 then (select user_profile_image_id from user_profile where profile_id = sender_ui.profile_id) \
+		 case receiver_ui.user_info_id when $1 then (select user_profile_image_id from user_profile where profile_id = sender_ui.profile_id) \
 			else (select user_profile_image_id from user_profile where profile_id = receiver_ui.profile_id) \
 			end \
         from post_message_room pmr \
