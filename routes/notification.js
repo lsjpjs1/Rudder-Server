@@ -66,6 +66,8 @@ const notificationFromToken = async function (os, notification_token,notificatio
         } else if (os == 'android') {
             try{
                 
+                payload.title = title
+                payload.body = notification_message
                 const options = {
                     uri:'https://fcm.googleapis.com/fcm/send', 
                     method: 'POST',
@@ -75,11 +77,6 @@ const notificationFromToken = async function (os, notification_token,notificatio
                     },
                     json: {
                         'to': notification_token,
-                        'notification': {
-                            'title': title,
-                            'body': notification_message
-                            
-                        },
                         'data': payload
                     }
                     }
