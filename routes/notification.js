@@ -18,7 +18,7 @@ function getNotificationTitle(notificationType) {
     }
 }
 
-const notificationFromToken = async function (os, notification_token,notification_message,notificationType) {
+const notificationFromToken = async function (os, notification_token,notification_message,notificationType,payload) {
     const title = getNotificationTitle(notificationType)
     if (typeof os != "undefined" && typeof notification_token != "undefined") {
         console.log(__dirname.toString())
@@ -53,7 +53,7 @@ const notificationFromToken = async function (os, notification_token,notificatio
             // 메시지 내용.
             note.alert = notification_message;
             // 누가 보냈는지 여부.
-            note.payload = { "messageFrom": "minhoServer" };
+            note.payload =  JSON.stringify(payload);
             // ios app 번들 명.
             note.topic = process.env.IOS_APP_BUNDLE_NAME;
             // 실제 메시지를 보내도록 합니다.
@@ -79,7 +79,8 @@ const notificationFromToken = async function (os, notification_token,notificatio
                             'title': title,
                             'body': notification_message
                             
-                        }
+                        },
+                        'data': payload
                     }
                     }
                 request.post(options, function(err,httpResponse,body){ 
