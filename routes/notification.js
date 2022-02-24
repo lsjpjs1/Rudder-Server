@@ -53,7 +53,8 @@ const notificationFromToken = async function (os, notification_token,notificatio
             // 메시지 내용.
             note.alert = notification_message;
             // 누가 보냈는지 여부.
-            note.payload =  JSON.stringify(payload);
+            // note.payload =  JSON.stringify(payload);
+            note.payload =  {"minho":"park"};
             // ios app 번들 명.
             note.topic = process.env.IOS_APP_BUNDLE_NAME;
             // 실제 메시지를 보내도록 합니다.
