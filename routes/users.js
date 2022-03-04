@@ -19,7 +19,7 @@ async function addUserRequest(user_info_id,body){
   }
 }
 
-
+//완료
 router.post("/addUserRequest",async function(req,res){
 
   const {token,request_body} = req.body
@@ -44,7 +44,7 @@ async function blockUser(user_info_id,blockUserInfoId){
   }
 }
 
-
+//완료
 //user가 user 차단하는 api
 router.post("/blockUser",async function(req,res){
 
@@ -73,7 +73,7 @@ async function updateNickname(user_info_id,nickname){
   }
 }
 
-
+//완료
 router.post("/updateNickname",async function(req,res){
 
   const {token,nickname} = req.body
