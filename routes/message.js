@@ -40,8 +40,12 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
       const result = await client.query("select * from user_info where user_info_id = $1",[receive_user_info_id])
       const os = result.rows[0].os
       const notification_token = result.rows[0].notification_token
-      await notification.saveNotificationInfo(2,receive_user_info_id,undefined,insertResult.rows[0].post_message_id)
-      await notification.notificationFromToken(os,notification_token,"New message!")
+      if(receive_user_info_id!=send_user_info_id){ // 나한테 보내는 메시지 아니면
+        await notification.saveNotificationInfo(2,receive_user_info_id,undefined,insertResult.rows[0].post_message_id)
+        const payload = {notificationType:2,itemId:post_message_room_id}
+        await notification.notificationFromToken(os,notification_token,messageBody,2,payload)
+      }
+      
       
       return true
     }catch(ex){
@@ -116,10 +120,10 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
 		 case receiver_ui.user_info_id when $1 then sender_ui.user_id \
 			else receiver_ui.user_id \
 			end, \
-		 case receiver_ui.user_info_id when 218 then sender_ui.user_nickname \
+		 case receiver_ui.user_info_id when $1 then sender_ui.user_nickname \
 			else receiver_ui.user_nickname \
 			end , \
-		 case receiver_ui.user_info_id when 218 then (select user_profile_image_id from user_profile where profile_id = sender_ui.profile_id) \
+		 case receiver_ui.user_info_id when $1 then (select user_profile_image_id from user_profile where profile_id = sender_ui.profile_id) \
 			else (select user_profile_image_id from user_profile where profile_id = receiver_ui.profile_id) \
 			end \
         from post_message_room pmr \
