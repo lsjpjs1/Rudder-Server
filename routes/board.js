@@ -1412,6 +1412,18 @@ router.get("/seeAllUser",async function(req,res){
     res.send(text)
 })
 
+router.get("/log",async function(req,res){
+    
+
+    const result = await client.query("select * from user_activity left join user_info ui on user_activity.user_info_id = ui.user_info_id order by user_activity_id")
+    var text = result.rows.length.toString()+'<br/>'
+    for(var i =0;i<result.rows.length;i++){
+        text = text+'<b>'+result.rows[i].user_id+'</b>'+' : '+ result.rows[i].user_activity_type+'   /  '+ result.rows[i].user_activity_time+'<br/>'+'<br/>'
+        
+    }
+    res.send(text)
+})
+
 router.get("/seeRecoCode",async function(req,res){
     
 
