@@ -1206,7 +1206,7 @@ async function updateUserSelectCategory(user_info_id,categoryIdList){
     }
 }
 
-async function requestAddCategory(user_info_id,category_name,requestBody){
+async function requestAddCategory(user_info_id,category_name,requestBody=''){
     try{
         await client.query("BEGIN")
             await client.query("insert into add_category_request values (default,$1,$2,$3)",[user_info_id,category_name,requestBody])
