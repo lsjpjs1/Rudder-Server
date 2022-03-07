@@ -1206,7 +1206,7 @@ async function updateUserSelectCategory(user_info_id,categoryIdList){
     }
 }
 
-async function requestAddCategory(user_info_id,category_name,requestBody){
+async function requestAddCategory(user_info_id,category_name,requestBody=''){
     try{
         await client.query("BEGIN")
             await client.query("insert into add_category_request values (default,$1,$2,$3)",[user_info_id,category_name,requestBody])
@@ -1407,6 +1407,18 @@ router.get("/seeAllUser",async function(req,res){
     var text = result.rows.length.toString()+'<br/>'
     for(var i =0;i<result.rows.length;i++){
         text = text+'<b>'+result.rows[i].user_id+'</b>'+' : '+ result.rows[i].user_email+'   /  '+ result.rows[i].code+'   /  '+ result.rows[i].school_name+'<br/>'+'<br/>'
+        
+    }
+    res.send(text)
+})
+
+router.get("/log",async function(req,res){
+    
+
+    const result = await client.query("select * from user_activity left join user_info ui on user_activity.user_info_id = ui.user_info_id order by user_activity_id")
+    var text = result.rows.length.toString()+'<br/>'
+    for(var i =0;i<result.rows.length;i++){
+        text = text+'<b>'+result.rows[i].user_id+'</b>'+' : '+ result.rows[i].user_activity_type+'   /  '+ result.rows[i].user_activity_time+'<br/>'+'<br/>'
         
     }
     res.send(text)
