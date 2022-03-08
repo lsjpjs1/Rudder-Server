@@ -12,7 +12,7 @@ function getNotificationTitle(notificationType) {
     if (notificationType == 1){
         return "New comment at your post!"
     } else if (notificationType == 2) {
-        return "New message!"
+        return "New quick mail!"
     } else if (notificationType == 3){
         return "New comment at your comment!"
     }
