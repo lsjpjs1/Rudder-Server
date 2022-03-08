@@ -173,7 +173,7 @@ async function categoryList(school_id=1,user_info_id=-1){
             (select distinct on (c.category_id) c.*,usc.user_info_id from category as c \
             left join (select user_info_id,category_id from user_select_category where  user_info_id = $2) as usc \
             on usc.category_id = c.category_id \
-            where school_id = $1 and category_type = 'common' and category_enable = true  \
+            where school_id = $1 and (category_type = 'common' or category_type = 'department') and category_enable = true  \
             order by c.category_id) as res order by category_order",[school_id,user_info_id]) 
         var categoryList = new Array()
         for(result of results.rows){
@@ -185,6 +185,7 @@ async function categoryList(school_id=1,user_info_id=-1){
             }else{
                 category.isSelect = true
             }
+            category.category_type = result.category_type
             categoryList.push(category)
         }
         return categoryList
@@ -197,50 +198,7 @@ async function categoryList(school_id=1,user_info_id=-1){
     }
 }
 
-router.post("/departmentCategoryList",async function(req,res){
-    var {token} = req.body
-    var user_info_id
 
-    const tmp = jwt.verify(token,SECRET_KEY)
-    school_id=tmp.school_id
-    user_info_id = tmp.user_info_id
-
-    const categories = await departmentCategoryList(school_id,user_info_id)
-    res.send(JSON.stringify({results:categories}))
-})
-
-
-
-async function departmentCategoryList(school_id=1,user_info_id=-1){
-    try{
-        const results = await client.query("\
-        select * from \
-            (select distinct on (c.category_id) c.*,usc.user_info_id from category as c \
-            left join (select user_info_id,category_id from user_select_category where  user_info_id = $2) as usc \
-            on usc.category_id = c.category_id \
-            where school_id = $1 and category_type = 'department' and category_enable = true  \
-            order by c.category_id) as res order by category_order",[school_id,user_info_id]) 
-        var categoryList = new Array()
-        for(result of results.rows){
-            var category = new Object()
-            category.category_id = result.category_id
-            category.category_name = result.category_name
-            if(result.user_info_id==null){
-                category.isSelect = false
-            }else{
-                category.isSelect = true
-            }
-            categoryList.push(category)
-        }
-        return categoryList
-    }catch(ex){
-        console.log("Failed to execute categoryList"+ex)
-        await client.query("ROLLBACK")
-    }finally{
-       // await client.end()
-        console.log("Cleaned.") 
-    }
-}
 
 
 
