@@ -108,6 +108,7 @@ async function clubCategoryList(school_id=1,user_info_id=-1){
                 category.category_name = result.category_name
                 category.school_id = result.school_id
                 category.category_type = result.category_type
+                category.category_abbreviation = result.category_abbreviation
                 if(result.category_member_user_info_id!=null){
                     category.isMember='t'
                 }else if(result.category_join_request_user_info_id!=null){
@@ -180,6 +181,7 @@ async function categoryList(school_id=1,user_info_id=-1){
             var category = new Object()
             category.category_id = result.category_id
             category.category_name = result.category_name
+            category.category_abbreviation = result.category_abbreviation
             if(result.user_info_id==null){
                 category.isSelect = false
             }else{
@@ -1165,7 +1167,7 @@ async function getUploadSignedUrls(contentTypes,user_info_id,post_id){
 async function userSelectCategoryList(user_info_id,school_id){
     try{
         const results = await client.query(" \
-        select cc.category_id,cc.category_name,cc.category_type from category cc left join user_select_category usc on usc.category_id = cc.category_id \
+        select cc.category_id,cc.category_name,cc.category_type,cc.category_abbreviation from category cc left join user_select_category usc on usc.category_id = cc.category_id \
         where category_enable = true and \
         case \
             when (select category_id from user_select_category where user_info_id = $1 limit 1) is null then school_id = $2 and category_type='common'\
