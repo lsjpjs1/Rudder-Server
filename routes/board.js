@@ -261,7 +261,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
                     (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
-                      where is_delete = false and board.school_id = $3 and (c.category_type != 'club' or c.category_id in (select category_id from category_member where user_info_id=$4)) \
+                      where is_delete = false and board.school_id = $3 and (c.category_type = 'common' or (c.category_type='department' and c.category_id in (select category_id from user_select_category where user_info_id=$4)) or c.category_id in (select category_id from category_member where user_info_id=$4)) \
                       order by post_id desc \
                       limit $2) as b \
             left join (select post_id,user_id from board_like where user_id = $1) as bl on bl.post_id = b.post_id \
@@ -293,7 +293,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
                     (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
-                      where is_delete = false and board.school_id = $3 and post_id < $5 and (c.category_type != 'club' or c.category_id in (select category_id from category_member where user_info_id=$4)) \
+                      where is_delete = false and board.school_id = $3 and post_id < $5 and (c.category_type = 'common' or (c.category_type='department' and c.category_id in (select category_id from user_select_category where user_info_id=$4)) or c.category_id in (select category_id from category_member where user_info_id=$4)) \
                       order by post_id desc \
                       limit $2) as b \
             left join (select post_id,user_id from board_like where user_id = $1) as bl on bl.post_id = b.post_id \
