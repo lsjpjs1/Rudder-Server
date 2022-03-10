@@ -14,7 +14,7 @@ function getNotificationTitle(notificationType) {
     } else if (notificationType == 2) {
         return "Your uni friend sent a Quick Mail."
     } else if (notificationType == 3){
-        return "Your uni friend replied on your comment. "
+        return "Your uni friend replied to your comment."
     }
 }
 
