@@ -225,7 +225,7 @@ async function renderPost(board_type='bulletin',endPostId=-1,category_id=-1,user
         if(searchBody!=""){
             if(endPostId==-1){
                 var results = await client.query("select string_agg(distinct file_name,',') as image_names,ui.*,bl.user_id as like_user_id,b.* from \
-                (select board.*, c.category_type, c.category_name \
+                (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                   from board \
                   left join category c on board.category_id = c.category_id \
                   where is_delete = false and board.school_id = $3 and board.post_body like $5 and (c.category_type != 'club' or c.category_id in (select category_id from category_member where user_info_id=$4)) \
@@ -236,11 +236,11 @@ async function renderPost(board_type='bulletin',endPostId=-1,category_id=-1,user
         left join board_image b_image on b.post_id = b_image.post_id \
         left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
         where ub.user_info_id is null \
-        group by b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
+        group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
         order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,'%'+searchBody+'%'])
             }else{
 var results = await client.query("select string_agg(distinct file_name,',') as image_names,ui.*,bl.user_id as like_user_id,b.* from \
-                    (select board.*, c.category_type, c.category_name \
+                    (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and post_id < $5 and board.post_body like $6 and (c.category_type != 'club' or c.category_id in (select category_id from category_member where user_info_id=$4)) \
@@ -251,14 +251,14 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join board_image b_image on b.post_id = b_image.post_id \
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
-            group by b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
+            group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
             order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,endPostId,'%'+searchBody+'%'])
             }
         }else{
             if(endPostId==-1){
                 if(category_id==-1){
                     var results = await client.query("select string_agg(distinct file_name,',') as image_names,ui.*,bl.user_id as like_user_id,b.* from \
-                    (select board.*, c.category_type, c.category_name \
+                    (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and (c.category_type != 'club' or c.category_id in (select category_id from category_member where user_info_id=$4)) \
@@ -269,11 +269,11 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join board_image b_image on b.post_id = b_image.post_id \
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
-            group by b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
+            group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
             order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
                 }else{
                     var results = await client.query("select string_agg(distinct file_name,',') as image_names,ui.*,bl.user_id as like_user_id,b.* from \
-                    (select board.*, c.category_type, c.category_name \
+                    (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and board.category_id = $5 \
@@ -284,13 +284,13 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join board_image b_image on b.post_id = b_image.post_id \
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
-            group by b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
+            group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
             order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,category_id])
                 }
             }else{
                 if(category_id==-1){
                     var results = await client.query("select string_agg(distinct file_name,',') as image_names,ui.*,bl.user_id as like_user_id,b.* from \
-                    (select board.*, c.category_type, c.category_name \
+                    (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and post_id < $5 and (c.category_type != 'club' or c.category_id in (select category_id from category_member where user_info_id=$4)) \
@@ -301,11 +301,11 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join board_image b_image on b.post_id = b_image.post_id \
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
-            group by b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
+            group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
             order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,endPostId])
                 }else{
                     var results = await client.query("select string_agg(distinct file_name,',') as image_names,ui.*,bl.user_id as like_user_id,b.* from \
-                    (select board.*, c.category_type, c.category_name \
+                    (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and post_id < $5 and board.category_id = $6 \
@@ -316,7 +316,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join board_image b_image on b.post_id = b_image.post_id \
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
-            group by b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
+            group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
             order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,endPostId,category_id])
                 }
             }
@@ -346,6 +346,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             data.like_count = results.rows[i].like_count
             data.post_view = results.rows[i].post_view
             data.category_id = results.rows[i].category_id
+            data.category_abbreviation = results.rows[i].category_abbreviation
             if (data.category_id == null || typeof data.category_id=='undefined'){
                 data.category_id = 1
             }
@@ -447,6 +448,7 @@ async function postFromPostId(postId,user_info_id,user_id){
             data.like_count = results.rows[0].like_count
             data.post_view = results.rows[0].post_view
             data.category_id = results.rows[0].category_id
+            data.category_abbreviation = results.rows[0].category_abbreviation
             if (data.category_id == null || typeof data.category_id=='undefined'){
                 data.category_id = 1
             }
@@ -554,6 +556,7 @@ async function myPosts(board_type='bulletin',endPostId=-1,category_id=-1,user_id
             data.like_count = results.rows[i].like_count
             data.post_view = results.rows[i].post_view
             data.category_id = results.rows[i].category_id
+            data.category_abbreviation = results.rows[i].category_abbreviation
             if (data.category_id == null || typeof data.category_id=='undefined'){
                 data.category_id = 1
             }
@@ -662,6 +665,7 @@ async function postsWithMyComment(board_type='bulletin',endPostId=-1,category_id
             data.like_count = results.rows[i].like_count
             data.post_view = results.rows[i].post_view
             data.category_id = results.rows[i].category_id
+            data.category_abbreviation = results.rows[i].category_abbreviation
             if (data.category_id == null || typeof data.category_id=='undefined'){
                 data.category_id = 1
             }
