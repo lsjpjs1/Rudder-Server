@@ -10,11 +10,11 @@ var router = express.Router();
 
 function getNotificationTitle(notificationType) {
     if (notificationType == 1){
-        return "New comment at your post!"
+        return "Your uni friend commented on your post."
     } else if (notificationType == 2) {
-        return "New quick mail!"
+        return "Your uni friend sent a Quick Mail."
     } else if (notificationType == 3){
-        return "New comment at your comment!"
+        return "Your uni friend replied on your comment. "
     }
 }
 
