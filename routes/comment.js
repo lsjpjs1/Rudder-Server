@@ -10,13 +10,15 @@ const tk = require("./tokenhandle");
 const notification = require("./notification")
 const request = require('request')
 
-async function commentRender(post_id, user_id){
+async function commentRender(post_id, user_id, user_info_id){
     try{
         await client.query("BEGIN")
-        const results = await client.query("select left_join_res.*,bcl.user_id as like_user_id from \
+        const results = await client.query("select left_join_res.*,bcl.user_id as like_user_id,my_ub.blocked_user_info_id from \
         (SELECT bcn.*,ui.user_nickname,ui.user_profile_image_id,ui.user_info_id from board_comment as bcn left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on bcn.user_id = ui.user_id where post_id = $1) as left_join_res \
         left join (select * from board_comment_like where user_id = $2) as bcl on left_join_res.comment_id = bcl.comment_id \
-        where is_delete=false order by group_num,order_in_group",[post_id,user_id])
+        left join (select blocked_user_info_id from user_block where user_info_id = $3) as my_ub on my_ub.blocked_user_info_id = left_join_res.user_info_id \
+        where is_delete=false and my_ub.blocked_user_info_id is null \
+        order by group_num,order_in_group",[post_id,user_id,user_info_id])
         var comments = new Array()
         for(var i=0;i<results.rows.length;i++){
             var currentComment  = new Object()
@@ -317,7 +319,7 @@ router.post("/showComment",async function(req,res){
     const {post_id,token} = req.body; 
     if(tk.decodeToken(token)){
         var decodedToken = jwt.verify(token,SECRET_KEY)
-        var comments=await commentRender(post_id,decodedToken.user_id);
+        var comments=await commentRender(post_id,decodedToken.user_id,decodedToken.user_info_id);
         var jsonData=JSON.stringify({results:comments})
         res.send(jsonData);
     }else{
