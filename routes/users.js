@@ -113,6 +113,7 @@ async function updateUserProfileImage(user_info_id,profileImageId){
   }
 }
 
+//완료
 router.post("/updateUserProfileImage",async function(req,res){
 
   
