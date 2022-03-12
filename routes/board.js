@@ -211,8 +211,12 @@ router.post("/renderPost",async function(req,res){
     if(tk.decodeToken(token)){
         const tmp = jwt.verify(token,SECRET_KEY)
         var jsonData = await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody,tmp.user_info_id);
+        try {
+            res.send(jsonData);
+        } catch (error) {
+            var jsonData = JSON.stringify(new Array())
+        }
         
-        res.send(jsonData);
     }
     
 })
