@@ -419,7 +419,6 @@ router.post("/getNotice",async function(req,res){
 
     const {os,version} = req.body
     const result = await getNotice(os,version)
-    console.log(result)
     res.send(JSON.stringify({results:result}))
 });
 

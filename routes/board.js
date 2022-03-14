@@ -207,7 +207,7 @@ async function categoryList(school_id=1,user_info_id=-1){
 router.post("/renderPost",async function(req,res){
     
     const {board_type,endPostId,category_id,token,searchBody} = req.body; 
-    console.log("board_type",board_type,"endPostId",endPostId,"category_id",category_id,"token",token,"searchBody",searchBody)
+
     if(tk.decodeToken(token)){
         const tmp = jwt.verify(token,SECRET_KEY)
         var jsonData = await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody,tmp.user_info_id);
@@ -215,7 +215,7 @@ router.post("/renderPost",async function(req,res){
             console.log(jsonData)
             res.send(jsonData);
         } catch (error) {
-            console.log('renderPost error')
+
             var jsonData = JSON.stringify(new Array())
         }
         
@@ -1250,11 +1250,9 @@ router.post("/requestAddCategory",async function(req,res){
 
 router.post("/userSelectCategoryList",async function(req,res){
     const {token} = req.body
-    console.log(token)
     if(tk.decodeToken){
         const tmp = jwt.verify(token,SECRET_KEY)
         const categories = await userSelectCategoryList(tmp.user_info_id,tmp.school_id)
-        console.log(categories)
         res.send(JSON.stringify({results:categories}))
     }
     
