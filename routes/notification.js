@@ -59,7 +59,10 @@ const notificationFromToken = async function (os, notification_token,notificatio
             note.topic = process.env.IOS_APP_BUNDLE_NAME;
             // 실제 메시지를 보내도록 합니다.
             apn_provider.send(note, deviceToken).then(function (result) {
-                console.log("결과 : " + result.failed[0].response.reason);
+                if(typeof result.failed[0]!='undefined'){
+                    console.log("알림전송 실패 : " + result.failed[0].response.reason);
+                }
+                
                 console.log(result);
             }).catch(function (err) {
                 throw (err);
