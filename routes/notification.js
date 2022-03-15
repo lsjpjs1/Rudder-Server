@@ -39,6 +39,7 @@ const notificationFromToken = async function (os, notification_token,notificatio
                 },
                 production: production
             };
+
             let apn_provider = new apn.Provider(option)
             // 앱에서 APNs에 앱을 등록하고, 얻은 값.
             let deviceToken = notification_token;
@@ -51,7 +52,7 @@ const notificationFromToken = async function (os, notification_token,notificatio
             // 메시지가 도착했을 때 나는 소리.
             note.sound = "ping.aiff";
             // 메시지 내용.
-            note.alert = notification_message;
+            note.alert = title.replace('.',': ')+notification_message;
             // 누가 보냈는지 여부.
             // note.payload =  JSON.stringify(payload);
             note.payload =  {"minho":"park"};
