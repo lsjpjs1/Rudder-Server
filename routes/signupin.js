@@ -31,13 +31,6 @@ const {OAuth2Client} = require('google-auth-library');
 const { response } = require('express');
 const clientForGoogle = new OAuth2Client('637113083380-dc8jne5nklsbgept80dbkkiiufsrh7f9.apps.googleusercontent.com');
 
-function checkemail(email){//assume that Edin's email adress is like "s12345@edin.ac.uk"
-     var emailregex=/s[0-9][0-9][0-9][0-9][0-9][0-9][0-9]@ed\.ac\.uk/;
-     if(email=="brianfriend@ed.ac.uk" || email=="mhpark0220@naver.com")return true;
-
-    console.log("the email is "+emailregex.test(email))
-    return emailregex.test(email)
-}
 
 async function decodeToken(token){
     return jwt.verify(token,SECRET_KEY,(error,decoded)=>{
@@ -103,9 +96,6 @@ router.post("/logout",async function(req,res){
         res.send(JSON.stringify({results:{isSuccess:false}}))
     }
     
-    
-
-
 
 });
 
@@ -245,17 +235,6 @@ async function checkexist(user_id,user_password){
     }
 }
 
-async function verifyGoogleIdToken(idToken){
-    
-    const ticket = await clientForGoogle.verifyIdToken({
-        idToken: idToken,
-        audience: "637113083380-dc8jne5nklsbgept80dbkkiiufsrh7f9.apps.googleusercontent.com",  
-    });
-    const payload = ticket.getPayload();
-    const userid = payload['sub'];
-    return payload
-    
-}
 
 async function googleLogin(payload){
     const result=await client.query("select * from user_info where user_id=$1",[payload.email])
@@ -284,24 +263,7 @@ async function googleLogin(payload){
     
 }
 
-async function signUpInsertGoogle(user_id,user_password,email,user_google_email,user_type,recommendationCode) { 
-    try{
-       // await client.connect()
-        await client.query("BEGIN")
-        
-        const results=await client.query("insert into user_info values (default,$1, null,$2,true,null,$3)",[user_google_email,email,user_type])
 
-        console.log("Inserted a new id")
-        await client.query("COMMIT")
-    }catch(ex){
-        console.log("Failed to execute signin"+ex)
-        await client.query("ROLLBACK")
-    }finally{
-       // await client.end()
-       await insertRecommendationCode(user_google_email,recommendationCode)
-        console.log("Cleaned.") 
-    }
-}
 
 async function schoolList() { 
     try{
@@ -450,36 +412,6 @@ router.post("/schoolList",async function(req,res){
 
 
 
-router.post('/googleLogin', async function(req,res){
-    const {idToken} = req.body
-    console.log(idToken)
-    const payload = await verifyGoogleIdToken(idToken)
-    
-    const result=await client.query("select * from user_info where user_id=$1",[payload.email])
-    if(result.rows.length>0){
-        const user_info_id=result.rows[0].user_info_id
-            const payloadForJWT = {user_id:payload.email,user_info_id:user_info_id}
-            let options = {}
-
-            jwt.sign(payloadForJWT, SECRET_KEY, options, (err, token) => {
-                response= {
-                    text: 'main',
-                    info: token
-                }
-                console.log(response)
-                res.json(response)
-            })
-    }else{
-        
-            var response= {
-                text: 'signup',
-                info: ''
-            }
-            res.json(response)
-            
-    }
-    
-})
 
 
 
@@ -544,19 +476,6 @@ router.post("/signup",async function(req,res){
 
 
 
-
-
-router.post("/signUpInsertGoogle",async function(req,res){
-
-    const {user_id,user_password,email,user_google_email,user_type,recommendationCode} = req.body
-    
-    console.log(req.body)
-        
-        await signUpInsertGoogle(user_id,user_password,email,user_google_email,user_type,recommendationCode).then(res.send("Welcome "))
-    
-        
-
-});
 
 router.post("/sendIdToEmail",async function(req,res){
 
