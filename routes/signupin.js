@@ -76,7 +76,7 @@ async function logout(user_info_id){
         console.log("Cleaned.") 
     }
 }
-
+//완료
 router.post("/logout",async function(req,res){
 
     const {token} = req.body
@@ -122,6 +122,7 @@ async function signup(user_id,user_password,email,recommendationCode,school_id,p
     }
 }
 
+//완료
 router.post("/signupinsert",async function(req,res){
     // user_id : String, user_password : String, email : String, recommendationCode : String, school_id : int, character_index : String, profile_body : String, user_nickname : String
     const {user_id,user_password,email,recommendationCode,school_id,profile_body,user_nickname,user_profile_image_id} = req.body
@@ -338,7 +339,7 @@ async function getNotice(os,version) {
         if(os=='android'&&version!=ANDROID_VERSION){
             NOTICE_BODY=UPDATE_BODY
         }
-        if(os=='ios'&&(version!='3.0.7'&&version!='3.0.8')){
+        if(os=='ios'&&(version!='3.0.9')){
             NOTICE_BODY=UPDATE_BODY
         }
         return {isExist:IS_EXIST,notice:NOTICE_BODY}
