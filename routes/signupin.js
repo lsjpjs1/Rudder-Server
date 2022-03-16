@@ -105,7 +105,7 @@ async function signup(user_id,user_password,email,recommendationCode,school_id,p
         const encryptedPw = crypto.createHmac('sha1',secret).update(user_password).digest('base64') // encrypting pw
         await client.query("BEGIN")
         
-        const results=await client.query("insert into user_info values (default,$1, $2,$3,true,$4,default,$5)",[user_id,encryptedPw,email,user_nickname,school_id])
+        const results=await client.query("insert into user_info values (default,$1, $2,$3,$4,default,$5)",[user_id,encryptedPw,email,user_nickname,school_id])
 
         console.log(results)
         console.log("Inserted a new id")
