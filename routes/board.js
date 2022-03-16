@@ -212,7 +212,6 @@ router.post("/renderPost",async function(req,res){
         const tmp = jwt.verify(token,SECRET_KEY)
         var jsonData = await renderPost(board_type,endPostId,category_id,tmp.user_id,tmp.school_id,searchBody,tmp.user_info_id);
         try {
-            console.log(jsonData)
             res.send(jsonData);
         } catch (error) {
 
