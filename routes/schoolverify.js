@@ -144,7 +144,7 @@ console.log(email)
             const mailOptions = {
                 from: process.env.GOOGLE_USER,
                 to: email,
-                subject: "Mate verification mail",
+                subject: "Rudder verification mail",
                 text: "Verification code : "+authNum
               };
               

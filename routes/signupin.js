@@ -154,6 +154,7 @@ async function checkduplication(user_id){
     }
 }
 
+//완료
 router.post("/checkduplication",async function(req,res){
 
     const user_id = req.body.user_id;
@@ -185,6 +186,7 @@ async function checkDuplicationNickname(nickname){
     }
 }
 
+//완료
 router.post("/checkDuplicationNickname",async function(req,res){
 
     const nickname = req.body.nickname;
@@ -371,6 +373,7 @@ async function profileImageUrl(user_info_id) {
     }
 }
 
+//완료
 router.post("/profileImageUrl",async function(req,res){
     const {token} = req.body
     const tmp = jwt.verify(token,SECRET_KEY)
@@ -378,6 +381,7 @@ router.post("/profileImageUrl",async function(req,res){
     res.send(JSON.stringify({results:{url:url}}))
 });
 
+//완료
 router.post("/getNotice",async function(req,res){
 
     const {os,version} = req.body
@@ -385,12 +389,14 @@ router.post("/getNotice",async function(req,res){
     res.send(JSON.stringify({results:result}))
 });
 
+//완료
 router.post("/profileImageList",async function(req,res){
 
     const profileImages = await profileImageList()
     res.send(JSON.stringify({results:{profileImageList:profileImages}}))
 });
 
+//완료
 router.post("/validationToken",async function(req,res){
     const {token} = req.body
     console.log(token)
@@ -404,7 +410,7 @@ router.post("/validationToken",async function(req,res){
     }
 });
 
-
+//완료
 router.post("/schoolList",async function(req,res){
 
     const schools = await schoolList()
@@ -415,7 +421,7 @@ router.post("/schoolList",async function(req,res){
 
 
 
-
+//완료
 router.post('/loginJWT', async function(req,res){
     const {user_id,user_password,notification_token,os} = req.body
     console.log(req.body)
@@ -462,18 +468,7 @@ router.post('/loginJWT', async function(req,res){
         }))
     }
 })
-router.post("/signup",async function(req,res){
 
-    const user_id = req.body.user_id;
-    const user_password = req.body.user_password;
-    if(await checkduplication(user_id)==true){
-        res.send("false");
-    }else{
-    
-        res.send("true");
-        // signup(user_id,user_password)
-    }
-});
 
 
 
@@ -487,7 +482,7 @@ router.post("/sendIdToEmail",async function(req,res){
         const mailOptions = {
             from: process.env.GOOGLE_USER,
             to: email,
-            subject: "Your Mate ID",
+            subject: "Your Rudder ID",
             text: "ID : "+result.rows[0].user_id
           };
           
@@ -519,7 +514,7 @@ router.post("/sendPwVerificationCode", async function(req,res){
         const mailOptions = {
             from: process.env.GOOGLE_USER,
             to: email,
-            subject:"Mate verification mail",
+            subject:"Rudder verification mail",
             text: "Verification code : "+authNum
           };
           
@@ -565,7 +560,7 @@ async function sendPwToEmail(email) {
         const mailOptions = {
             from: process.env.GOOGLE_USER,
             to: email,
-            subject: "Your new Mate password",
+            subject: "Your new Rudder password",
             text: "Password : "+pw
           };
           
