@@ -341,7 +341,7 @@ async function getNotice(os,version) {
         if(os=='android'&&version!=ANDROID_VERSION){
             NOTICE_BODY=UPDATE_BODY
         }
-        if(os=='ios'&&(version!='3.0.9')){
+        if(os=='ios'&&(version!='3.1.0')){
             NOTICE_BODY=UPDATE_BODY
         }
         return {isExist:IS_EXIST,notice:NOTICE_BODY}
