@@ -234,7 +234,7 @@ async function renderPost(board_type='bulletin',endPostId=-1,category_id=-1,user
                   from board \
                   left join category c on board.category_id = c.category_id \
                   where is_delete = false and board.school_id = $3 and board.post_body like $5 and (c.category_type != 'club' or c.category_id in (select category_id from category_member where user_info_id=$4)) \
-                  order by post_id desc \
+                  order by post_time desc \
                   limit $2) as b \
         left join (select post_id,user_id from board_like where user_id = $1) as bl on bl.post_id = b.post_id \
         left join (select aa.user_info_id,aa.user_nickname,bb.user_profile_image_id,aa.user_id from user_info as aa left join user_profile bb on aa.profile_id = bb.profile_id) as ui on b.user_id = ui.user_id \
@@ -242,14 +242,14 @@ async function renderPost(board_type='bulletin',endPostId=-1,category_id=-1,user
         left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
         where ub.user_info_id is null \
         group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
-        order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,'%'+searchBody+'%'])
+        order by b.post_time desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,'%'+searchBody+'%'])
             }else{
 var results = await client.query("select string_agg(distinct file_name,',') as image_names,ui.*,bl.user_id as like_user_id,b.* from \
                     (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and post_id < $5 and board.post_body like $6 and (c.category_type != 'club' or c.category_id in (select category_id from category_member where user_info_id=$4)) \
-                      order by post_id desc \
+                      order by post_time desc \
                       limit $2) as b \
             left join (select post_id,user_id from board_like where user_id = $1) as bl on bl.post_id = b.post_id \
             left join (select aa.user_info_id,aa.user_nickname,bb.user_profile_image_id,aa.user_id from user_info as aa left join user_profile bb on aa.profile_id = bb.profile_id) as ui on b.user_id = ui.user_id \
@@ -257,7 +257,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
             group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
-            order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,endPostId,'%'+searchBody+'%'])
+            order by b.post_time desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,endPostId,'%'+searchBody+'%'])
             }
         }else{
             if(endPostId==-1){
@@ -267,7 +267,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and (c.category_type = 'common' or (c.category_type='department' and c.category_id in (select category_id from user_select_category where user_info_id=$4)) or c.category_id in (select category_id from category_member where user_info_id=$4)) \
-                      order by post_id desc \
+                      order by post_time desc \
                       limit $2) as b \
             left join (select post_id,user_id from board_like where user_id = $1) as bl on bl.post_id = b.post_id \
             left join (select aa.user_info_id,aa.user_nickname,bb.user_profile_image_id,aa.user_id from user_info as aa left join user_profile bb on aa.profile_id = bb.profile_id) as ui on b.user_id = ui.user_id \
@@ -275,14 +275,14 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
             group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
-            order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
+            order by b.post_time desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id])
                 }else{
                     var results = await client.query("select string_agg(distinct file_name,',') as image_names,ui.*,bl.user_id as like_user_id,b.* from \
                     (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and board.category_id = $5 \
-                      order by post_id desc \
+                      order by post_time desc \
                       limit $2) as b \
             left join (select post_id,user_id from board_like where user_id = $1) as bl on bl.post_id = b.post_id \
             left join (select aa.user_info_id,aa.user_nickname,bb.user_profile_image_id,aa.user_id from user_info as aa left join user_profile bb on aa.profile_id = bb.profile_id) as ui on b.user_id = ui.user_id \
@@ -290,7 +290,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
             group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
-            order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,category_id])
+            order by b.post_time desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,category_id])
                 }
             }else{
                 if(category_id==-1){
@@ -299,7 +299,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and post_id < $5 and (c.category_type = 'common' or (c.category_type='department' and c.category_id in (select category_id from user_select_category where user_info_id=$4)) or c.category_id in (select category_id from category_member where user_info_id=$4)) \
-                      order by post_id desc \
+                      order by post_time desc \
                       limit $2) as b \
             left join (select post_id,user_id from board_like where user_id = $1) as bl on bl.post_id = b.post_id \
             left join (select aa.user_info_id,aa.user_nickname,bb.user_profile_image_id,aa.user_id from user_info as aa left join user_profile bb on aa.profile_id = bb.profile_id) as ui on b.user_id = ui.user_id \
@@ -307,14 +307,14 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
             group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
-            order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,endPostId])
+            order by b.post_time desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,endPostId])
                 }else{
                     var results = await client.query("select string_agg(distinct file_name,',') as image_names,ui.*,bl.user_id as like_user_id,b.* from \
                     (select board.*, c.category_type, c.category_name, c.category_abbreviation \
                       from board \
                       left join category c on board.category_id = c.category_id \
                       where is_delete = false and board.school_id = $3 and post_id < $5 and board.category_id = $6 \
-                      order by post_id desc \
+                      order by post_time desc \
                       limit $2) as b \
             left join (select post_id,user_id from board_like where user_id = $1) as bl on bl.post_id = b.post_id \
             left join (select aa.user_info_id,aa.user_nickname,bb.user_profile_image_id,aa.user_id from user_info as aa left join user_profile bb on aa.profile_id = bb.profile_id) as ui on b.user_id = ui.user_id \
@@ -322,7 +322,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
             left join user_block ub on (ub.user_info_id=$4 and ub.blocked_user_info_id = ui.user_info_id) \
             where ub.user_info_id is null \
             group by b.category_abbreviation, b.post_id, bl.user_id, user_nickname, user_profile_image_id, b.user_id, post_title, post_body, post_time, comment_count, like_count, post_view, board_type_id, b.category_id, b.school_id, is_delete, is_edit, b.category_id, category_name, b.school_id, category_type, ui.user_info_id, user_nickname, user_profile_image_id, ui.user_id, category_type, category_name \
-            order by b.post_id desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,endPostId,category_id])
+            order by b.post_time desc",[user_id,POST_NUMBER_IN_ONE_PAGE,school_id,user_info_id,endPostId,category_id])
                 }
             }
         }
@@ -419,7 +419,7 @@ async function postFromPostId(postId,user_info_id,user_id){
             (select b.*,bl.user_id as like_user_id from \
                 board as b left join \
                 (select * from board_like where user_id=$1) as bl \
-                on b.post_id = bl.post_id order by b.post_id) as left_join_res) as b \
+                on b.post_id = bl.post_id order by b.post_time) as left_join_res) as b \
                 left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on b.user_id = ui.user_id \
                 left join board_type as bt on b.board_type_id = bt.board_type_id \
                 left join category as c on b.category_id = c.category_id \
@@ -526,7 +526,7 @@ async function myPosts(board_type='bulletin',endPostId=-1,category_id=-1,user_id
              from board as b \
              left join (select * from board_like where user_id=$1) as bl \
                 on b.post_id = bl.post_id \
-             order by b.post_id) as left_join_res) as b \
+             order by b.post_time) as left_join_res) as b \
                 left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on b.user_id = ui.user_id \
                 left join board_type as bt on b.board_type_id = bt.board_type_id \
                 left join category as c on b.category_id = c.category_id \
@@ -535,7 +535,7 @@ async function myPosts(board_type='bulletin',endPostId=-1,category_id=-1,user_id
                 group by ui.user_id,ui.user_info_id,ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit,ub.blocked_user_info_id \
                 having b.is_delete = false and ub.blocked_user_info_id is null and b.post_body like '%%'  \
                 and ui.user_info_id = $4 \
-                order by post_id desc \
+                order by post_time desc \
                 limit $3 offset $2",[user_id,offset,POST_NUMBER_IN_ONE_PAGE,user_info_id])
 
         
@@ -634,7 +634,7 @@ async function postsWithMyComment(board_type='bulletin',endPostId=-1,category_id
              from board as b \
              left join (select * from board_like where user_id=$1) as bl \
                 on b.post_id = bl.post_id \
-             order by b.post_id) as left_join_res) as b \
+             order by b.post_time) as left_join_res) as b \
                 left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on b.user_id = ui.user_id \
                 left join board_type as bt on b.board_type_id = bt.board_type_id \
                 left join category as c on b.category_id = c.category_id \
@@ -644,7 +644,7 @@ async function postsWithMyComment(board_type='bulletin',endPostId=-1,category_id
                 group by  bc.user_id, ui.user_id,ui.user_info_id,ui.user_profile_image_id,b.post_id,b.user_id,b.post_title,b.post_body,b.post_time,b.comment_count,b.like_count,b.post_view,b.board_type_id,b.category_id,b.school_id,b.is_delete,b.like_user_id,ui.user_nickname,c.category_id,bt.board_type_name,b.is_edit,ub.blocked_user_info_id \
                 having b.is_delete = false and ub.blocked_user_info_id is null and b.post_body like '%%'  \
                 and bc.user_id is not null \
-                order by post_id desc \
+                order by post_time desc \
                 limit $3 offset $2",[user_id,offset,POST_NUMBER_IN_ONE_PAGE,user_info_id])
 
         
@@ -768,7 +768,7 @@ async function postsWithMyComment(board_type='bulletin',endPostId=-1,category_id
 //             (select b.*,bl.user_id as like_user_id from \
 //                 board as b left join \
 //                 (select * from board_like where user_id=$1) as bl \
-//                 on b.post_id = bl.post_id order by b.post_id) as left_join_res) as b \
+//                 on b.post_id = bl.post_id order by b.post_time) as left_join_res) as b \
 //                 left join (select * from user_info as aa left join user_profile as bb on aa.profile_id = bb.profile_id ) as ui on b.user_id = ui.user_id \
 //                 left join board_type as bt on b.board_type_id = bt.board_type_id \
 //                 left join category as c on b.category_id = c.category_id \
@@ -777,20 +777,20 @@ async function postsWithMyComment(board_type='bulletin',endPostId=-1,category_id
 //                 having bt.board_type_name = $2 and b.is_delete = false and b.post_body like "+searchStr
 //         if(endPostId == -1){
 //             if(category_id==-1){
-//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
-//                 and b.school_id=$4 order by post_id desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id])
+//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and school_id=$4 and post_body like "+searchStr+" order by post_time desc limit $3  ) as not_delete order by post_time asc limit 1) \
+//                 and b.school_id=$4 order by post_time desc ",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,school_id])
 //             }else{
-//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and category_id=$4 and school_id=$5 and post_body like "+searchStr+" order by post_id desc limit $3  ) as not_delete order by post_id asc limit 1) \
-//                 and b.school_id=$5 and b.category_id=$4 order by post_id desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,category_id,school_id])
+//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and category_id=$4 and school_id=$5 and post_body like "+searchStr+" order by post_time desc limit $3  ) as not_delete order by post_time asc limit 1) \
+//                 and b.school_id=$5 and b.category_id=$4 order by post_time desc",[user_id,board_type,POST_NUMBER_IN_ONE_PAGE,category_id,school_id])
 //             }
             
 //         }else{
 //             if(category_id==-1){
-//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 and post_body like "+searchStr+" order by post_id desc limit $4  ) as not_delete order by post_id asc limit 1) \
-//                 and b.school_id=$5 and b.post_id < $3 order by post_id desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE,school_id])
+//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and school_id=$5 and post_body like "+searchStr+" order by post_time desc limit $4  ) as not_delete order by post_time asc limit 1) \
+//                 and b.school_id=$5 and b.post_id < $3 order by post_time desc",[user_id,board_type,endPostId,POST_NUMBER_IN_ONE_PAGE,school_id])
 //             }else{
-//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and category_id=$4 and school_id=$6 and post_body like "+searchStr+" order by post_id desc limit $5  ) as not_delete order by post_id asc limit 1) \
-//                 and b.school_id=$6 and b.post_id < $3 and b.category_id=$4 order by post_id desc",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE,school_id])
+//                 var results = await client.query(baseQuery+"and b.post_id >= (select post_id from (select post_id from board where is_delete = false and post_id<$3 and category_id=$4 and school_id=$6 and post_body like "+searchStr+" order by post_time desc limit $5  ) as not_delete order by post_time asc limit 1) \
+//                 and b.school_id=$6 and b.post_id < $3 and b.category_id=$4 order by post_time desc",[user_id,board_type,endPostId,category_id,POST_NUMBER_IN_ONE_PAGE,school_id])
 //             }
             
 //         }

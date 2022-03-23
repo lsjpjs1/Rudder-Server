@@ -4,7 +4,7 @@ var router = express.Router();
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.writeHead(301, {
-    Location: 'https://bush-thorn-7ed.notion.site/Rudder-05a628bb03a44097ada829222aec0603'
+    Location: 'https://bush-thorn-7ed.notion.site/Welcome-to-UCL-s-Student-Community-be2b4d26d8904e758356522b987e0293'
   }).end();
 });
 

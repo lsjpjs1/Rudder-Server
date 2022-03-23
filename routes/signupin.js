@@ -341,7 +341,7 @@ async function getNotice(os,version) {
         if(os=='android'&&version!=ANDROID_VERSION){
             NOTICE_BODY=UPDATE_BODY
         }
-        if(os=='ios'&&(version!='3.0.9')){
+        if(os=='ios'&&(version!='3.1.0'&&version!='3.1.1')){
             NOTICE_BODY=UPDATE_BODY
         }
         return {isExist:IS_EXIST,notice:NOTICE_BODY}
@@ -472,7 +472,7 @@ router.post('/loginJWT', async function(req,res){
 
 
 
-
+//완료
 router.post("/sendIdToEmail",async function(req,res){
 
     const email = req.body.email
@@ -499,6 +499,7 @@ router.post("/sendIdToEmail",async function(req,res){
 
 });
 
+//완료
 router.post("/sendPwVerificationCode", async function(req,res){
     console.log("sendPwVerificationCode is called")
     const email=req.body.email;
@@ -529,6 +530,7 @@ router.post("/sendPwVerificationCode", async function(req,res){
 
 })
 
+//완료
 router.post("/checkCode",async function(req,res){
     console.log("checkCode is called")
     const {email,verifyCode}=req.body

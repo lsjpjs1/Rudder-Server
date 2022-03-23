@@ -28,7 +28,7 @@ const smtpTransport = nodemailer.createTransport({
 
 async function addverify(user_info_id){
     try{
-        //console.log(tk.testint)
+        //console.log(tk.testint)/s
         await client.query("BEGIN")
 
         const temp=await client.query("update user_info set user_verified='true' where user_info_id=($1)",[user_info_id])
@@ -83,6 +83,7 @@ async function isVerify(user_info_id){
     }
 }
 
+//안씀
 router.post("/",async function(req,res){
     console.log("schoolverify is called")
     const email=req.body.email;
@@ -128,7 +129,7 @@ async function checkEmailduplication(email){
     }
 }
 
-
+//완료
 router.post("/verifyEmail",async function(req,res){
     console.log("verifyEmail is called")
     const {email,school_id}=req.body
@@ -164,6 +165,7 @@ console.log(email)
 
 })
 
+//완료
 router.post("/checkCode",async function(req,res){
     console.log("checkCode is called")
     const {email,verifyCode}=req.body
@@ -184,7 +186,7 @@ router.post("/checkCode",async function(req,res){
 
 })
 
-
+//안씀
 router.post("/isVerify",async function(req, res){
     console.log("isVerify is called")
     const {token} = req.body
