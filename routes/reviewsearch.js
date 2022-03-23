@@ -130,7 +130,7 @@ async function reportCount(post_type,post_id){
 async function reportReceive(user_id,post_id,post_type,report_body){
     try{
         await client.query("BEGIN")
-        await client.query("insert into report_receive values (default,$1,$2,$3,$4,default)",[post_type,report_body,user_id,post_id])
+        await client.query("insert into report_receive values (default,$1,$2,$3,$4)",[post_type,report_body,user_id,post_id])
         await client.query("COMMIT")
         await reportCount(post_type,post_id)
 
