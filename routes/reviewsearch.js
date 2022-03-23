@@ -263,7 +263,7 @@ async function setNickname(user_info_id,nickname){
     }
 }
 
-
+//안씀
 router.post("/setNickname",async function(req, res){
     
     const {token,nickname}=req.body
@@ -289,6 +289,7 @@ router.post("/setNickname",async function(req, res){
     
 })
 
+//안씀
 router.post("/IsNullNickname",async function(req, res){
     
     const token=req.body.token
@@ -311,6 +312,7 @@ router.post("/IsNullNickname",async function(req, res){
     
 })
 
+//안씀
 router.post("/courseSearch",async function(req, res){
     const searchContents = req.body.searchContents;
     const selectedSchool = req.body.selectedSchool
@@ -338,6 +340,7 @@ router.post("/courseSearch",async function(req, res){
     
 })
 
+//안씀
 router.post("/favoriteCourseSearch",async function(req, res){
     const {token,language}=req.body
     const decodeJson = JSON.parse(await tk.decodeToken(token))
@@ -351,6 +354,7 @@ router.post("/favoriteCourseSearch",async function(req, res){
     
 })
 
+//안씀
 router.post("/reviewrender",async function(req,res){
     console.log("reviewrender is called")
     const course_id = req.body.course_id; 
@@ -366,6 +370,7 @@ router.post("/reviewrender",async function(req,res){
 
 })
 
+//안씀
 router.post("/getSchoolList",async function(req, res){
     const {school_id} = req.body;
     const token=req.body.token
@@ -383,12 +388,14 @@ router.post("/getSchoolList",async function(req, res){
     
 })
 
+//안씀
 router.post("/getAlert",async function(req, res){
     res.send("New Version Avaliable in App Store!")
     
     
 })
 
+//안씀
 router.post("/getCreditList",async function(req, res){
     const {school_id} = req.body;
     const token=req.body.token
@@ -406,6 +413,7 @@ router.post("/getCreditList",async function(req, res){
     
 })
 
+//
 router.post("/sendReport",async function(req,res){
     const token=req.body.token
     const post_id = req.body.post_id
@@ -420,6 +428,7 @@ router.post("/sendReport",async function(req,res){
     
 })
 
+//안씀
 router.post("/tokenValidCheck",async function(req, res){
     const token=req.body.token
     if(JSON.parse(await tk.decodeToken(token)).valid){
