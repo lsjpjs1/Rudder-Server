@@ -203,7 +203,7 @@ async function categoryList(school_id=1,user_info_id=-1){
 
 
 
-
+//완료
 router.post("/renderPost",async function(req,res){
     
     const {board_type,endPostId,category_id,token,searchBody} = req.body; 
@@ -1195,6 +1195,36 @@ router.get("/addPostPage",async function(req,res){
     res.sendFile(__dirname + '/addPostPage.html');
 })
 
+router.get("/dau",async function(req,res){
+    
 
+    const result = await client.query("select count(a),a as day from \
+    (select user_info_id,to_char(user_activity_time, 'YYYY-MM-DD') as a from user_activity \
+    group by user_info_id,a) as tmp \
+    group by a \
+    order by a desc")
+    var text = ""
+    for(var i =0;i<result.rows.length;i++){
+        text = text+'<b>'+result.rows[i].day+'</b>'+' : '+ result.rows[i].count+'<br/>'+'<br/>'
+        
+    }
+    res.send(text)
+})
+
+router.get("/mau",async function(req,res){
+    
+
+    const result = await client.query("select count(a),a as day from \
+    (select user_info_id,to_char(user_activity_time, 'YYYY-MM') as a from user_activity \
+    group by user_info_id,a) as tmp \
+    group by a \
+    order by a desc")
+    var text = ""
+    for(var i =0;i<result.rows.length;i++){
+        text = text+'<b>'+result.rows[i].day+'</b>'+' : '+ result.rows[i].count+'<br/>'+'<br/>'
+        
+    }
+    res.send(text)
+})
 
 module.exports = router;
