@@ -398,6 +398,7 @@ var results = await client.query("select string_agg(distinct file_name,',') as i
     }
 }
 
+//완료
 router.post("/postFromPostId",async function(req,res){
     
     const {token,postId} = req.body; 
@@ -501,6 +502,7 @@ async function postFromPostId(postId,user_info_id,user_id){
     }
 }
 
+//완료
 router.post("/myPosts",async function(req,res){
     console.log("myPosts is called")
     //offset : int = 0,1,2,3...... 0페이지,1페이지,2페이지,3페이지....  default = 0
@@ -725,11 +727,11 @@ async function addPost(board_type,post_title,post_body,user_id,imageInfoList=[],
         await client.query("BEGIN")
         var result
         if (category_id==-1){
-            result = await client.query("insert into board values \
+            result = await client.query("insert into board (post_id,user_id,post_title,post_body,post_time,comment_count,like_count,post_view,board_type_id,category_id,school_id) values \
             (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),(select category_id from category where category_name = $5 and school_id = $6),$6) \
             returning *",[user_id,post_title,post_body,board_type,NO_CATEGORY_NAME,school_id])
         }else{
-            result = await client.query("insert into board values \
+            result = await client.query("insert into board (post_id,user_id,post_title,post_body,post_time,comment_count,like_count,post_view,board_type_id,category_id,school_id) values \
             (default, $1, $2, $3, default,0,0,0,(select board_type_id from board_type where board_type_name = $4),$5,$6) \
             returning *",[user_id,post_title,post_body,board_type,category_id,school_id])
         }
@@ -851,6 +853,7 @@ async function editPost(post_id,post_body){
     }
 }
 
+//완료
 router.post("/editPost",async function(req,res){
     console.log("editPost is called") 
     const {post_body,post_id,token}=req.body
@@ -1063,7 +1066,7 @@ router.post("/getUploadSignedUrls",async function(req,res){
 
 
 
-
+//완료
 router.post("/deletePost",async function(req,res){
     console.log("deletePost is called")
     const {post_id} = req.body
@@ -1073,7 +1076,7 @@ router.post("/deletePost",async function(req,res){
 
 
 
-
+//완료
 router.post("/addPost",async function(req,res){
     console.log("addPost is called")
     const {board_type,post_title,post_body,token,category_id,imageInfoList} = req.body
@@ -1096,13 +1099,14 @@ router.post("/addPost",async function(req,res){
 })
 
 
-
+//완료
 router.post("/addPostViewCount",async function(req,res){
     console.log("addPostViewCount is called")
     const {post_id} = req.body
     await addPostViewCount(post_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
 })
 
+//완료
 router.post("/addlike",async function(req,res){
     console.log("addlike is called")
     const {post_id,token,plusValue} = req.body
