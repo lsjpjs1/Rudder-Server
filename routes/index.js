@@ -14,4 +14,9 @@ router.get('/apple-app-site-association', function(req, res, next) {
   res.json(data);
 });
 
+/* GET home page. */
+router.get('/deeplink', function(req, res, next) {
+  res.send("hello");
+});
+
 module.exports = router;

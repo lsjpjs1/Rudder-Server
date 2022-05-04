@@ -4,7 +4,7 @@
         "details": [
             {
                 "appID": "4ARQMGH36A.com.Rudder.RudderCourse",
-                "paths": [ "*"]
+                "paths": [ "/deeplink/*"]
             } 
         ]
     }
