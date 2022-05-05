@@ -5,7 +5,7 @@ const data = JSON.parse(fs.readFileSync("./apple-app-site-association", "utf8"))
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.writeHead(301, {
-    Location: 'https://bush-thorn-7ed.notion.site/Welcome-to-UCL-s-Student-Community-be2b4d26d8904e758356522b987e0293'
+    Location: 'https://seasoned-industry-d2e.notion.site/Hello-Students-b514e16c03d84d43acb04caa9d4fe450'
   }).end();
 });
 
