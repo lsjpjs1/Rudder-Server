@@ -428,27 +428,39 @@ router.post('/loginJWT', async function(req,res){
     if(await checkexist(user_id,user_password)==true){
         if(await checkpassword(user_id,user_password)==true){
 
-            if(typeof notification_token != "undefined" && typeof os != "undefined"){
-                await updateNotificationToken(os,notification_token,user_id) // 알림 토큰 업데이트
-            }
+            
             
             const result=await client.query("select * from user_info where user_id=$1",[user_id])
-            const user_info_id=result.rows[0].user_info_id
-            const school_id = result.rows[0].school_id
-            //let {JWT_SECRET} = router.settings
-            let payload = {user_id:user_id,user_info_id:user_info_id,school_id:school_id}
-            let options = {}
-            
-            jwt.sign(payload, SECRET_KEY, options, (err, token) => {
+            if(result.rows[0].user_type==1){
                 res.send(JSON.stringify({
                     results:{
-                        success: true,
-                        error:'',
-                        token: token
+                        success: false,
+                        error:'Email is not verified',
+                        token: ''
                     }
                 }))
-            })
-            userRecord.insertUserActivity(user_info_id,"login")
+            }else{
+                const user_info_id=result.rows[0].user_info_id
+                const school_id = result.rows[0].school_id
+                if(typeof notification_token != "undefined" && typeof os != "undefined"){
+                    await updateNotificationToken(os,notification_token,user_id) // 알림 토큰 업데이트
+                }
+                //let {JWT_SECRET} = router.settings
+                let payload = {user_id:user_id,user_info_id:user_info_id,school_id:school_id}
+                let options = {}
+                
+                jwt.sign(payload, SECRET_KEY, options, (err, token) => {
+                    res.send(JSON.stringify({
+                        results:{
+                            success: true,
+                            error:'',
+                            token: token
+                        }
+                    }))
+                })
+                userRecord.insertUserActivity(user_info_id,"login")
+            }
+            
         }else{
             res.send(JSON.stringify({
                 results:{
