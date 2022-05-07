@@ -417,10 +417,6 @@ router.post("/schoolList",async function(req,res){
     res.send(JSON.stringify({results:schools}))
 });
 
-
-
-
-
 //완료
 router.post('/loginJWT', async function(req,res){
     const {user_id,user_password,notification_token,os} = req.body
