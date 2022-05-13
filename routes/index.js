@@ -17,7 +17,7 @@ router.get('/apple-app-site-association', function(req, res, next) {
 /* GET home page. */
 router.get('/deeplink', function(req, res, next) {
     res.writeHead(301, {
-    Location: 'https://teamswan.page.link'
+    Location: 'https://teamswan.page.link/main'
   }).end();
 });
 
