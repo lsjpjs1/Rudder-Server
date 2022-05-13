@@ -27,7 +27,13 @@ router.get('/deeplink', function(req, res, next) {
     body: {
       "dynamicLinkInfo": {
         "domainUriPrefix": "https://teamswan.page.link",
-        "link": "https://teamswan.page.link/main?jobId=78",
+        "link": "https://teamswan.page.link/main/?jobId=78",
+        "iosInfo": {
+          "iosBundleId": "com.Rudder.RudderCourse",
+        },
+        "androidInfo": {
+          "androidPackageName": "com.rudder"
+        }
       }
     }
   }
