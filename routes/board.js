@@ -69,6 +69,7 @@ async function requestJoinClub(category_id,user_info_id,request_body){
     }
 }
 
+//완료
 router.post("/clubCategoryList",async function(req,res){
     var {school_id,token} = req.body
     var user_info_id
@@ -150,6 +151,7 @@ async function clubCategoryList(school_id=1,user_info_id=-1){
     }
 }
 
+//완료
 router.post("/categoryList",async function(req,res){
     var {school_id,token} = req.body
     console.log('schoolid',req.body.school_id)
@@ -1024,6 +1026,7 @@ router.post("/requestAddCategory",async function(req,res){
     
 })
 
+//완료
 router.post("/userSelectCategoryList",async function(req,res){
     const {token} = req.body
     if(tk.decodeToken){
