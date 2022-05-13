@@ -19,7 +19,7 @@ router.get('/apple-app-site-association', function(req, res, next) {
 router.get('/deeplink', function(req, res, next) {
   
     
-
+  
   const options = {
     uri:'https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=AIzaSyCgd8viedlq1eKhBVUFqGSRVqYPyo6aVWc', 
     method: 'POST',
@@ -27,13 +27,7 @@ router.get('/deeplink', function(req, res, next) {
     body: {
       "dynamicLinkInfo": {
         "domainUriPrefix": "https://teamswan.page.link",
-        "link": "https://teamswan.page.link/main/?jobId=78",
-        "iosInfo": {
-          "iosBundleId": "com.Rudder.RudderCourse",
-        },
-        "androidInfo": {
-          "androidPackageName": "com.rudder"
-        }
+        "link": "https://teamswan.page.link/main/?jobId=78"
       }
     }
   }
