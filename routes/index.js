@@ -39,9 +39,7 @@ router.get('/deeplink', function(req, res, next) {
   }
   request.post(options, function(err,httpResponse,body){ 
     console.log(body)
-    res.writeHead(301, {
-      Location: body.shortLink
-    }).end();
+    res.redirect(body.shortLink)
   })
     
 });
