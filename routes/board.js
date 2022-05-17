@@ -48,6 +48,7 @@ async function approveJoinClub(category_id,user_info_id){
     }
 }
 
+//완료
 router.post("/requestJoinClub",async function(req,res){
     var {token,category_id,request_body} = req.body
     const tmp = jwt.verify(token,SECRET_KEY)
