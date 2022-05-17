@@ -19,11 +19,9 @@ router.get('/apple-app-site-association', function(req, res, next) {
 router.get('/deeplink', function(req, res, next) {
   
     
-  
-  
-  request.post(options, function(err,httpResponse,body){ 
-    res.redirect("http://onelink.to/rudder")
-  })
+
+    res.redirect("https://onelink.to/rudder")
+
     
 });
 
