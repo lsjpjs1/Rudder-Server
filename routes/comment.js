@@ -253,7 +253,7 @@ async function myComments(user_id,page){
     }
 }
 
-
+//보류
 router.post("/myComments",async function(req,res){
     console.log("myComments is called")
     const {token,page} = req.body; 
@@ -267,6 +267,7 @@ router.post("/myComments",async function(req,res){
     }
 })
 
+//완료
 router.post("/editComment",async function(req,res){
     console.log("editComment is called") 
     const {comment_body,comment_id,token}=req.body
@@ -278,12 +279,14 @@ router.post("/editComment",async function(req,res){
     }
 })
 
+//완료
 router.post("/deleteComment",async function(req,res){
     console.log("deleteComment is called")
     const {comment_id,post_id} = req.body
     await deleteComment(comment_id,post_id).then(res.send(JSON.stringify({results:{isSuccess:true}})))
 })
 
+//완료
 router.post("/addlike",async function(req,res){
     console.log("addlike is called")
     const {comment_id,token,plusValue} = req.body
@@ -299,6 +302,7 @@ router.post("/addlike",async function(req,res){
     
 })
 
+//완료
 router.post("/addComment",async function(req,res){
     console.log("addComment is called")
     //일반 댓글일 경우 group_num  -> -1로 request, 대댓글일 경우 부모 댓글의 group_num
@@ -314,6 +318,7 @@ router.post("/addComment",async function(req,res){
     }
 })
 
+//완료
 router.post("/showComment",async function(req,res){
     console.log("showComment is called")
     const {post_id,token} = req.body; 
