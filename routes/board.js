@@ -613,6 +613,7 @@ async function myPosts(board_type='bulletin',endPostId=-1,category_id=-1,user_id
     }
 }
 
+//완료
 router.post("/postsWithMyComment",async function(req,res){
     console.log("postsWithMyComment is called")
     //offset : int = 0,1,2,3...... 0페이지,1페이지,2페이지,3페이지....  default = 0
@@ -1017,7 +1018,7 @@ async function requestAddCategory(user_info_id,category_name,requestBody=''){
 
 
 
-
+//완료
 router.post("/requestAddCategory",async function(req,res){
     const {token,category_name,requestBody} = req.body
     if(tk.decodeToken){
