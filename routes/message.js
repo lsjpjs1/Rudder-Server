@@ -58,6 +58,7 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
     }
   }
   
+  //완료
   router.post("/sendPostMessage",async function(req,res){
   
     
@@ -93,6 +94,7 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
     }
   }
   
+  //완료
   router.post("/updateIsRead",async function(req,res){
   
     
@@ -170,7 +172,7 @@ async function sendPostMessage(send_user_info_id,receive_user_info_id,messageBod
   }
 
   
-
+  //완료
   router.post("/getMyMessageRooms",async function(req,res){
   
     
@@ -227,6 +229,7 @@ async function getMessagesByRoom(user_info_id,postMessageRoomId){
     }
   }
 
+  //완료
   router.post("/getMessagesByRoom",async function(req,res){
   
     

@@ -47,6 +47,7 @@ async function getNotifications(user_info_id){
     }
   }
 
+  //완료
   router.post("/getNotifications",async function(req,res){
   
     
