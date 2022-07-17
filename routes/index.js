@@ -6,7 +6,7 @@ const data = JSON.parse(fs.readFileSync("./apple-app-site-association", "utf8"))
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.writeHead(301, {
-    Location: 'https://seasoned-industry-d2e.notion.site/Hello-Students-b514e16c03d84d43acb04caa9d4fe450'
+    Location: 'https://rudderpre.notion.site/rudderpre/54f8bd8a6f31416f9fcb94183e4be6f3'
   }).end();
 });
 
