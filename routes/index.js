@@ -16,6 +16,11 @@ router.get('/apple-app-site-association', function(req, res, next) {
 });
 
 /* GET home page. */
+router.get('/.well-known/acme-challenge/m8hHoV8nf28c5Vy_OHsImtPOdCppFueFoLQr7m1c3pw', function(req, res, next) {
+  res.sendFile(__dirname+"/ssl_file");
+});
+
+/* GET home page. */
 router.get('/deeplink', function(req, res, next) {
   
     
